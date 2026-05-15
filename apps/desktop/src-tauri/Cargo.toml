@@ -1,0 +1,22 @@
+[package]
+name = "inp-debugger"
+version = "0.1.0"
+description = "INP Debugger"
+authors = ["you"]
+edition = "2021"
+rust-version = "1.60"
+
+[build-dependencies]
+tauri-build = { version = "2.0.0-beta", features = [] }
+
+[dependencies]
+tauri = { version = "2.0.0-beta", features = [] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+[profile.release]
+panic = "abort" # Strip error messages and reduce binary size
+codegen-units = 1 # Better optimizations
+opt-level = "s" # Optimize for size
+lto = true # Link Time Optimization
+strip = true # Strip symbols from binary

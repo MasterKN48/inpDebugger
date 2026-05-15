@@ -5,9 +5,9 @@ This document tracks the progress of the INP Debugger project.
 ## Phase 1: Foundation & Project Setup
 - [x] Initialize project structure (JavaScript focus) <!-- id: 0 -->
 - [x] Setup `docs/prd.md` and `docs/technical-design.md` <!-- id: 1 -->
-- [ ] Integrate Swagger for API documentation <!-- id: 2 -->
-- [ ] Configure `apps/web` (Preact + Tailwind) <!-- id: 3 -->
-- [ ] Configure `apps/server` (Bun + Elysia + JavaScript) <!-- id: 4 -->
+- [x] Integrate Swagger for API documentation <!-- id: 2 -->
+- [x] Configure `apps/web` (Preact + Tailwind) <!-- id: 3 -->
+- [x] Configure `apps/server` (Bun + Elysia + JavaScript) <!-- id: 4 -->
 - [ ] Configure `apps/desktop` (Tauri wrapper) <!-- id: 5 -->
 
 ## Phase 2: Measurement Engine
