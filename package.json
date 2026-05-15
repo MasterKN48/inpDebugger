@@ -1,0 +1,13 @@
+{
+  "name": "inpdebugger",
+  "module": "index.js",
+  "type": "module",
+  "private": true,
+  "dependencies": {
+    "elysia": "latest",
+    "@elysiajs/swagger": "latest"
+  },
+  "devDependencies": {
+    "@types/bun": "latest"
+  }
+}
