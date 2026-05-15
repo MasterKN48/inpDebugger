@@ -1,13 +1,19 @@
 {
   "name": "inpdebugger",
-  "module": "index.js",
-  "type": "module",
   "private": true,
+  "workspaces": [
+    "apps/*"
+  ],
+  "scripts": {
+    "dev": "bun run dev:server & bun run dev:web",
+    "dev:server": "bun run apps/server/index.js",
+    "dev:web": "bun run --cwd apps/web dev"
+  },
   "dependencies": {
-    "elysia": "latest",
-    "@elysiajs/swagger": "latest"
+    "elysia": "0.8.17",
+    "@elysiajs/swagger": "0.8.5"
   },
   "devDependencies": {
-    "@types/bun": "latest"
+    "bun-types": "1.1.0"
   }
 }

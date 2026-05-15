@@ -8,7 +8,7 @@ This document tracks the progress of the INP Debugger project.
 - [x] Integrate Swagger for API documentation <!-- id: 2 -->
 - [x] Configure `apps/web` (Preact + Tailwind) <!-- id: 3 -->
 - [x] Configure `apps/server` (Bun + Elysia + JavaScript) <!-- id: 4 -->
-- [ ] Configure `apps/desktop` (Tauri wrapper) <!-- id: 5 -->
+- [x] Configure `apps/desktop` (Tauri wrapper) <!-- id: 5 -->
 
 ## Phase 2: Measurement Engine
 - [ ] Setup Playwright with Chromium <!-- id: 6 -->
