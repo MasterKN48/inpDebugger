@@ -11,22 +11,22 @@ This document tracks the progress of the INP Debugger project.
 - [x] Configure `apps/desktop` (Tauri wrapper) <!-- id: 5 -->
 
 ## Phase 2: Measurement Engine
-- [ ] Setup Playwright with Chromium <!-- id: 6 -->
-- [ ] Implement `web-vitals` attribution injection (JS) <!-- id: 7 -->
-- [ ] Implement Interaction Discovery module <!-- id: 8 -->
-- [ ] Implement Scripted Interaction Replay <!-- id: 9 -->
-- [ ] Implement CDP-based Long Task correlation <!-- id: 10 -->
+- [x] Setup Playwright with Chromium <!-- id: 6 -->
+- [x] Implement `web-vitals` attribution injection (JS) <!-- id: 7 -->
+- [x] Implement Interaction Discovery module <!-- id: 8 -->
+- [x] Implement Scripted Interaction Replay <!-- id: 9 -->
+- [x] Implement CDP-based Long Task correlation <!-- id: 10 -->
 
 ## Phase 3: Core Logic & Storage
-- [ ] Implement INP scoring and ranking logic <!-- id: 11 -->
-- [ ] Setup SQLite schema with `bun:sqlite` <!-- id: 12 -->
-- [ ] Implement Data Access Layer (JS) <!-- id: 13 -->
+- [x] Implement INP scoring and ranking logic <!-- id: 11 -->
+- [x] Setup SQLite schema with `bun:sqlite` <!-- id: 12 -->
+- [x] Implement Data Access Layer (JS) <!-- id: 13 -->
 
 ## Phase 4: API & Frontend Integration
-- [ ] Implement `POST /api/analyze` (Measurement orchestration) <!-- id: 14 -->
-- [ ] Implement `GET /api/results/:jobId` and `GET /api/history` <!-- id: 15 -->
-- [ ] Build Preact Dashboard UI (Run Form, Progress, Results) <!-- id: 16 -->
-- [ ] Implement Live Progress via SSE <!-- id: 17 -->
+- [x] Implement `POST /api/analyze` (Measurement orchestration) <!-- id: 14 -->
+- [x] Implement `GET /api/results/:jobId` and `GET /api/history` <!-- id: 15 -->
+- [x] Build Preact Dashboard UI (Run Form, Progress, Results) <!-- id: 16 -->
+- [x] Implement Live Progress via SSE / State Polling Loop <!-- id: 17 -->
 
 ## Phase 5: Desktop Packaging (Tauri)
 - [ ] Configure Tauri build for macOS, Linux, and Windows <!-- id: 18 -->
