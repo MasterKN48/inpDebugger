@@ -8,13 +8,29 @@
   "scripts": {
     "dev": "bun run dev:server & bun run dev:web",
     "dev:server": "bun --watch apps/server/index.js",
-    "dev:web": "bun run --cwd apps/web dev"
+    "dev:web": "bun run --cwd apps/web dev",
+    "lint": "eslint .",
+    "build": "bun run lint && bun run build:web",
+    "build:web": "bun run --cwd apps/web build",
+    "prepare": "husky"
   },
   "dependencies": {
     "elysia": "0.8.17",
     "@elysiajs/swagger": "0.8.5"
   },
   "devDependencies": {
-    "bun-types": "1.1.0"
-  }
+    "bun-types": "1.1.0",
+    "eslint": "^9.0.0",
+    "eslint-plugin-react": "^7.34.0",
+    "husky": "^9.0.1"
+  },
+  "author": "MasterKN48",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MasterKN48/inpDebugger.git"
+  },
+  "bugs": {
+    "url": "https://github.com/MasterKN48/inpDebugger/issues"
+  },
+  "homepage": "https://github.com/MasterKN48/inpDebugger#readme"
 }

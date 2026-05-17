@@ -2,6 +2,9 @@
 
 Open-source, self-hostable **Interaction to Next Paint (INP) debugger** focused only on INP measurement, analysis, and regression tracking.
 
+Developed by **[MasterKN48](https://github.com/MasterKN48)**  
+Official Repository: **[github.com/MasterKN48/inpDebugger](https://github.com/MasterKN48/inpDebugger)**
+
 This project is designed as a fast, lightweight developer tool that gives a similar style of insight to Google PageSpeed Insights and DebugBear's INP debugger, but for local, staging, authenticated, CI, and self-hosted environments.
 
 ---

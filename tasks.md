@@ -48,3 +48,5 @@ This document tracks the progress of the INP Debugger project.
 - [x] Integrate basic client-server API key validation via `X-API-Key` headers <!-- id: 31 -->
 - [x] Build and mount canvas-based dynamic neon pulsing lightning bolt browser favicon <!-- id: 32 -->
 - [x] Upgrade homepage header icon with intense ambient shadow bloom and hover effects <!-- id: 33 -->
+- [x] Integrate ESLint Flat Config (`eslint.config.js`) covering monorepo FE, BE, and packages <!-- id: 34 -->
+- [x] Implement Husky pre-commit hooks (`.husky/pre-commit`) running automatic workspace-wide linting before commits <!-- id: 35 -->
