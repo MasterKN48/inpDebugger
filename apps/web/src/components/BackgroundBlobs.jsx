@@ -1,20 +1,60 @@
 
 export function BackgroundBlobs() {
   return (
-    <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
-      {/* Soft Pink Blob */}
-      <div 
-        className="absolute -top-40 -left-40 w-96 h-96 md:w-[600px] md:h-[600px] rounded-full bg-gradient-to-tr from-pink-100 to-pink-200 opacity-40 blur-[100px] animate-spin"
-        style={{ animationDuration: '40s' }}
+    <div
+      className="hide-print"
+      style={{
+        position: 'fixed',
+        inset: 0,
+        overflow: 'hidden',
+        pointerEvents: 'none',
+        zIndex: 0,
+      }}
+    >
+      {/* Pink Ambient Blob */}
+      <div
+        className="animate-blob-spin"
+        style={{
+          position: 'absolute',
+          top: '-10rem',
+          left: '-10rem',
+          width: 'clamp(24rem, 40vw, 38rem)',
+          height: 'clamp(24rem, 40vw, 38rem)',
+          borderRadius: '50%',
+          background: 'radial-gradient(circle, var(--blob-pink-color) 0%, transparent 70%)',
+          filter: 'blur(80px)',
+          opacity: 0.65,
+        }}
       />
-      {/* Soft Green/Sage Blob */}
-      <div 
-        className="absolute -bottom-40 -right-40 w-96 h-96 md:w-[600px] md:h-[600px] rounded-full bg-gradient-to-br from-emerald-50 to-teal-100 opacity-45 blur-[120px] animate-pulse"
-        style={{ animationDuration: '25s' }}
+      {/* Green Ambient Blob */}
+      <div
+        style={{
+          position: 'absolute',
+          bottom: '-10rem',
+          right: '-10rem',
+          width: 'clamp(24rem, 40vw, 38rem)',
+          height: 'clamp(24rem, 40vw, 38rem)',
+          borderRadius: '50%',
+          background: 'radial-gradient(circle, var(--blob-green-color) 0%, transparent 70%)',
+          filter: 'blur(100px)',
+          opacity: 0.55,
+          animation: 'neon-pulse 25s ease-in-out infinite',
+        }}
       />
-      {/* Central Soft Warm Accent */}
-      <div 
-        className="absolute top-1/2 left-1/3 w-80 h-80 rounded-full bg-pink-50 opacity-30 blur-[130px]"
+      {/* Warm Central Accent */}
+      <div
+        style={{
+          position: 'absolute',
+          top: '50%',
+          left: '33%',
+          transform: 'translate(-50%, -50%)',
+          width: '20rem',
+          height: '20rem',
+          borderRadius: '50%',
+          background: 'radial-gradient(circle, var(--blob-warm-color) 0%, transparent 70%)',
+          filter: 'blur(90px)',
+          opacity: 0.40,
+        }}
       />
     </div>
   );

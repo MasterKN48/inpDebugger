@@ -1,15 +1,32 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+/*
+ * ============================================================
+ *  index.css — Global Foundation Layer
+ *  INP Debugger — Agentic Design Blueprint
+ * ============================================================
+ *
+ * Import order:
+ *   1. Google Fonts
+ *   2. Tailwind (utility layer)
+ *   3. Design Tokens (variables.css)
+ *   4. Shared Components (components.css)
+ *   5. App-level global resets and layout primitives
+ */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap');
 @import "tailwindcss";
+@import "./styles/variables.css";
+@import "./styles/components.css";
+
+/* ============================================
+   Base Reset
+   ============================================ */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
 
 :root {
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
-  line-height: 1.6;
-  color-scheme: light;
-  
-  /* Modern Colors - Slate / Pastel Light Theme */
-  background-color: #f8fafc;
-  color: #1e293b;
-
+  font-family: var(--font-sans);
+  line-height: var(--lh-normal);
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -19,9 +36,10 @@ body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
-  position: relative;
-  background-color: #f8fafc;
+  background-color: var(--bg-color);
+  color: var(--accent-vivid);
   overflow-x: hidden;
+  position: relative;
 }
 
 #app {
@@ -30,43 +48,15 @@ body {
   z-index: 10;
 }
 
-/* Custom Scrollbars */
-.scrollbar-thin::-webkit-scrollbar {
-  width: 6px;
-}
+/* ============================================
+   Global Animation Keyframes
+   ============================================ */
 
-.scrollbar-thin::-webkit-scrollbar-track {
-  background: rgba(0, 0, 0, 0.02);
-  border-radius: 8px;
-}
-
-.scrollbar-thin::-webkit-scrollbar-thumb {
-  background: rgba(148, 163, 184, 0.3);
-  border-radius: 8px;
-}
-
-.scrollbar-thin::-webkit-scrollbar-thumb:hover {
-  background: rgba(148, 163, 184, 0.5);
-}
-
-/* Custom Keyframe Animations */
-@keyframes spin-slow {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-.animate-spin-slow {
-  animation: spin-slow 40s linear infinite;
-}
-
+/* Soft fade-in from below — used on page mount */
 @keyframes fade-in-up {
   from {
     opacity: 0;
-    transform: translateY(12px);
+    transform: translateY(14px);
   }
   to {
     opacity: 1;
@@ -75,5 +65,55 @@ body {
 }
 
 .animate-fade-in {
-  animation: fade-in-up 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: fade-in-up 0.5s var(--ease-spring) forwards;
+}
+
+/* Continuous slow spin — ambient background blobs */
+@keyframes blob-spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+.animate-blob-spin {
+  animation: blob-spin 40s linear infinite;
+}
+
+/* Gentle neon pulse — icon glow on standby */
+@keyframes neon-pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.7; }
+}
+
+.animate-neon-pulse {
+  animation: neon-pulse 2s var(--ease-snappy) infinite;
+}
+
+/* Inline ping animation — status indicator rings */
+@keyframes status-ping {
+  75%, 100% {
+    transform: scale(2);
+    opacity: 0;
+  }
+}
+
+.animate-ping {
+  animation: status-ping 1.2s var(--ease-snappy) infinite;
+}
+
+/* Spinner — loading state */
+@keyframes spinner {
+  to { transform: rotate(360deg); }
+}
+
+.animate-spin {
+  animation: spinner 0.8s linear infinite;
+}
+
+/* ============================================
+   Global Focus Ring
+   ============================================ */
+:focus-visible {
+  outline: 2px solid var(--accent-light);
+  outline-offset: 3px;
+  border-radius: var(--radius-sm);
 }

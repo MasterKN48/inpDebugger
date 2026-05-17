@@ -1,0 +1,181 @@
+/*
+ * =============================================
+ *  variables.css — Unified Design Token System
+ *  INP Debugger — Agentic Design Blueprint
+ * =============================================
+ *
+ * This is the SINGLE SOURCE OF TRUTH for all visual
+ * tokens. No component or layout stylesheet may
+ * hardcode any color, spacing, or font value.
+ * Always bind to these custom properties.
+ */
+
+/* ----------------------------------------
+   CSS @property Declarations (Houdini API)
+   Required for animated gradients & conic borders
+   ---------------------------------------- */
+@property --angle {
+  syntax: '<angle>';
+  inherits: false;
+  initial-value: 0deg;
+}
+
+/* ----------------------------------------
+   Root Theme: Developer Tool / Slate Dark
+   ---------------------------------------- */
+:root {
+  /* --- Typography --- */
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', ui-monospace, monospace;
+
+  /* --- Font Sizes --- */
+  --fs-display: 2.25rem;   /* 36px — Page-level headings */
+  --fs-xl: 1.25rem;        /* 20px — Section card headings */
+  --fs-lg: 1.125rem;       /* 18px — Sub-headings */
+  --fs-base: 0.875rem;     /* 14px — Body text, form labels */
+  --fs-sm: 0.75rem;        /* 12px — Secondary labels, captions */
+  --fs-xs: 0.6875rem;      /* 11px — Meta labels, badges */
+  --fs-2xs: 0.625rem;      /* 10px — Tags, micro-labels */
+
+  /* --- Font Weights --- */
+  --fw-normal: 400;
+  --fw-medium: 500;
+  --fw-semibold: 600;
+  --fw-bold: 700;
+  --fw-extrabold: 800;
+  --fw-black: 900;
+
+  /* --- Line Heights --- */
+  --lh-tight: 1.25;
+  --lh-snug: 1.4;
+  --lh-normal: 1.6;
+  --lh-relaxed: 1.75;
+
+  /* --- Letter Spacing --- */
+  --ls-tighter: -0.04em;
+  --ls-tight: -0.02em;
+  --ls-normal: 0;
+  --ls-wide: 0.04em;
+  --ls-wider: 0.08em;
+  --ls-widest: 0.12em;
+}
+
+/* ============================================
+   Slate Theme (Primary Active Theme)
+   ============================================ */
+[data-theme="slate"],
+:root {
+  color-scheme: light;
+
+  /* --- Core Palette --- */
+  --accent-color: #334155;          /* Primary structural accent */
+  --accent-light: #475569;          /* Lighter accent for interactive states */
+  --accent-vivid: #0f172a;          /* Deep accent for high-contrast areas */
+  --bg-color: #f8fafc;              /* Main app backdrop */
+  --pill-bg: #f1f5f9;               /* Tag pills, badge, sidebar bg */
+  --line-color: #e2e8f0;            /* Grid separators, borders */
+  --hover-bg: #f1f5f9;              /* Hover zones, input field bg */
+  --input-bg: rgba(255, 255, 255, 0.7);  /* Edit mode input backdrops */
+
+  /* --- Semantic Status Colors --- */
+  --color-good: #10b981;            /* INP ≤ 200ms — Emerald */
+  --color-good-light: #d1fae5;
+  --color-good-border: #a7f3d0;
+  --color-good-text: #065f46;
+
+  --color-warning: #f59e0b;         /* INP 200–500ms — Amber */
+  --color-warning-light: #fef3c7;
+  --color-warning-border: #fde68a;
+  --color-warning-text: #92400e;
+
+  --color-poor: #ef4444;            /* INP > 500ms — Rose */
+  --color-poor-light: #fee2e2;
+  --color-poor-border: #fecaca;
+  --color-poor-text: #991b1b;
+
+  --color-active: #ec4899;          /* Live engine / active states — Pink */
+  --color-active-light: #fce7f3;
+  --color-active-border: #fbcfe8;
+
+  /* --- Surface Hierarchy --- */
+  --surface-base: rgba(255, 255, 255, 0.45);   /* Glass card surface */
+  --surface-raised: rgba(255, 255, 255, 0.60); /* Elevated inner panels */
+  --surface-inset: rgba(248, 250, 252, 0.80);  /* Inset / code blocks */
+  --surface-pill: rgba(241, 245, 249, 0.70);   /* Pills, badges */
+
+  /* --- Borders --- */
+  --border-glass: rgba(255, 255, 255, 0.60);   /* Outer glass card borders */
+  --border-subtle: rgba(226, 232, 240, 0.80);  /* Inner panel borders */
+  --border-strong: rgba(203, 213, 225, 0.90);  /* Input borders */
+  --border-dashed: var(--accent-color);         /* Dashed edit-mode indicators */
+
+  /* --- Glass Blur Layers --- */
+  --blur-glass: blur(28px) saturate(180%);
+  --blur-card: blur(16px) saturate(160%);
+  --blur-light: blur(8px);
+
+  /* --- Shadows --- */
+  --shadow-card: 0 8px 32px 0 rgba(142, 155, 178, 0.12);
+  --shadow-raised: 0 4px 16px 0 rgba(142, 155, 178, 0.10);
+  --shadow-sm: 0 2px 8px 0 rgba(142, 155, 178, 0.08);
+  --shadow-toast:
+    0 10px 25px -5px rgba(0, 0, 0, 0.10),
+    0 4px 10px -2px rgba(0, 0, 0, 0.05);
+
+  /* --- Status Glow Shadows --- */
+  --glow-good: 0 0 12px 0 rgba(16, 185, 129, 0.35);
+  --glow-warning: 0 0 12px 0 rgba(245, 158, 11, 0.35);
+  --glow-poor: 0 0 12px 0 rgba(244, 63, 94, 0.40);
+  --glow-active: 0 0 14px 0 rgba(236, 72, 153, 0.45);
+  --glow-neon: 0 0 20px rgba(163, 230, 53, 0.35), inset 0 0 10px rgba(163, 230, 53, 0.15);
+  --glow-neon-hover: 0 0 28px rgba(163, 230, 53, 0.50), inset 0 0 12px rgba(163, 230, 53, 0.25);
+
+  /* --- Spacing Scale --- */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-10: 2.5rem;
+  --space-12: 3rem;
+
+  /* --- Border Radii --- */
+  --radius-sm: 0.5rem;    /* 8px  */
+  --radius-md: 0.75rem;   /* 12px */
+  --radius-lg: 1rem;      /* 16px */
+  --radius-xl: 1.25rem;   /* 20px */
+  --radius-2xl: 1.5rem;   /* 24px */
+  --radius-3xl: 1.875rem; /* 30px */
+  --radius-full: 9999px;
+
+  /* --- Transition Curves --- */
+  --ease-spring: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-snappy: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-out: cubic-bezier(0, 0, 0.2, 1);
+  --ease-in: cubic-bezier(0.4, 0, 1, 1);
+  --ease-toast-in: cubic-bezier(0.175, 0.885, 0.32, 1.275);
+
+  --duration-fast: 150ms;
+  --duration-base: 250ms;
+  --duration-slow: 400ms;
+  --duration-slower: 600ms;
+
+  /* --- Liquid Flow Conic Border Gradient --- */
+  --liquid-gradient:
+    conic-gradient(
+      from var(--angle),
+      transparent 20%,
+      rgba(236, 72, 153, 0.6) 40%,
+      rgba(99, 102, 241, 0.5) 60%,
+      rgba(16, 185, 129, 0.5) 80%,
+      transparent 100%
+    );
+
+  /* --- Background Ambient Blobs (app backdrop) --- */
+  --blob-pink-color: rgba(252, 231, 243, 0.85);
+  --blob-green-color: rgba(209, 250, 229, 0.65);
+  --blob-warm-color: rgba(255, 237, 213, 0.45);
+}

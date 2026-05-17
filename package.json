@@ -9,6 +9,9 @@
     "dev": "bun run dev:server & bun run dev:web",
     "dev:server": "bun --watch apps/server/index.js",
     "dev:web": "bun run --cwd apps/web dev",
+    "tauri": "tauri",
+    "tauri:dev": "bun run dev:server & bunx tauri dev --config apps/desktop/src-tauri/tauri.conf.json",
+    "tauri:build": "bunx tauri build --config apps/desktop/src-tauri/tauri.conf.json",
     "lint": "eslint .",
     "build": "bun run lint && bun run build:web",
     "build:web": "bun run --cwd apps/web build",
@@ -19,6 +22,7 @@
     "@elysiajs/swagger": "0.8.5"
   },
   "devDependencies": {
+    "@tauri-apps/cli": "^2.0.0",
     "bun-types": "1.1.0",
     "eslint": "^9.0.0",
     "eslint-plugin-react": "^7.34.0",

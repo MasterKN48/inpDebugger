@@ -1,146 +1,232 @@
 import { h } from 'preact';
 import { useAuditStore } from '../store/useAuditStore';
 
+const STEPS = [
+  { key: 'initialized',   title: 'Initialization',        desc: 'Registering background job queue' },
+  { key: 'context_setup', title: 'Browser Emulation',     desc: 'Configuring Chromium context' },
+  { key: 'navigating',    title: 'Site Navigation',        desc: 'Loading document object model' },
+  { key: 'discovery',     title: 'Interaction Discovery',  desc: 'Scanning targets and inputs' },
+  { key: 'replaying',     title: 'Automated Replays',      desc: 'Simulating user interaction script' },
+  { key: 'processing',    title: 'Main-Thread Diagnostic', desc: 'Correlating active long tasks' },
+];
+
 export function LiveProgress() {
-  const jobProgress = useAuditStore(s => s.jobProgress);
-  const jobStatus = useAuditStore(s => s.jobStatus);
-  const errorMsg = useAuditStore(s => s.errorMsg);
+  const jobProgress    = useAuditStore(s => s.jobProgress);
+  const jobStatus      = useAuditStore(s => s.jobStatus);
+  const errorMsg       = useAuditStore(s => s.errorMsg);
   const clearActiveJob = useAuditStore(s => s.clearActiveJob);
 
   if (jobStatus === 'idle') return null;
 
-  // Map progress phases to human-readable steps
-  const steps = [
-    { key: 'initialized', title: 'Initialization', desc: 'Registering background job queue' },
-    { key: 'context_setup', title: 'Browser Emulation', desc: 'Configuring Chromium context' },
-    { key: 'navigating', title: 'Site Navigation', desc: 'Loading document object model' },
-    { key: 'discovery', title: 'Interaction Discovery', desc: 'Scanning targets and inputs' },
-    { key: 'replaying', title: 'Automated Replays', desc: 'Simulating user interaction script' },
-    { key: 'processing', title: 'Main-Thread Diagnostic', desc: 'Correlating active long tasks' }
-  ];
-
-  // Determine the active phase
   const latestUpdate = jobProgress[jobProgress.length - 1] || {};
-  const activePhase = latestUpdate.phase || 'initialized';
+  const activePhase  = latestUpdate.phase || 'initialized';
 
-  // Helper to determine step status
-  const getStepStatus = (stepKey, currentIndex) => {
-    const activeIndex = steps.findIndex(s => s.key === activePhase);
-    
+  const getStepStatus = (stepKey, idx) => {
+    const activeIndex = STEPS.findIndex(s => s.key === activePhase);
     if (jobStatus === 'failed') return 'failed';
-    if (stepKey === activePhase) return 'active';
-    if (activeIndex > currentIndex) return 'completed';
+    if (stepKey === activePhase)  return 'active';
+    if (activeIndex > idx)        return 'completed';
     return 'pending';
   };
 
   return (
-    <div className="backdrop-blur-md bg-white/45 border border-white/60 rounded-3xl p-6 shadow-[0_8px_32px_0_rgba(142,155,178,0.12)]">
-      <div className="flex justify-between items-center mb-6">
+    <div className="glass-card animate-fade-in">
+      {/* Card Header */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 'var(--space-6)' }}>
         <div>
-          <h2 className="text-xl font-semibold text-slate-800 tracking-tight flex items-center gap-2">
-            <svg 
-              xmlns="http://www.w3.org/2000/svg" 
-              viewBox="0 0 24 24" 
-              fill="none" 
-              stroke="#eab308" 
-              strokeWidth="2.5" 
-              strokeLinecap="round" 
-              strokeLinejoin="round" 
-              className="w-5 h-5 drop-shadow-[0_0_4px_rgba(234,179,8,0.7)] animate-pulse"
+          <h2 className="section-heading" style={{ marginBottom: 'var(--space-1)' }}>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="var(--color-warning)"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="section-heading-icon animate-neon-pulse"
+              style={{ filter: 'drop-shadow(0 0 5px rgba(245,158,11,0.7))' }}
             >
               <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
             </svg>
             Automated Auditing Engine
           </h2>
-          <p className="text-xs text-slate-500 font-medium mt-1">
-            Running Chromium headless session in the background...
+          <p style={{ margin: 0, fontSize: 'var(--fs-xs)', color: 'var(--accent-light)', opacity: 0.8 }}>
+            Running Chromium headless session in the background…
           </p>
         </div>
+
         {jobStatus === 'failed' && (
-          <button 
+          <button
+            id="btn-dismiss-error"
             onClick={clearActiveJob}
-            className="text-xs font-bold text-slate-500 hover:text-slate-700 bg-slate-200/50 hover:bg-slate-200 px-3 py-1.5 rounded-lg transition-colors cursor-pointer"
+            className="btn-dismiss"
           >
             Dismiss
           </button>
         )}
       </div>
 
+      {/* Error Panel */}
       {errorMsg ? (
-        <div className="bg-pink-50/70 border border-pink-100/80 p-4 rounded-2xl text-sm font-semibold text-pink-700 leading-relaxed shadow-sm">
-          ❌ <span className="font-extrabold">Audit Error:</span> {errorMsg}
-          <div className="text-[11px] text-pink-500 font-medium mt-2">
-            The measurement engine could not start or complete. Please check the target URL structure, secure port availability, or local connection configs.
+        <div
+          style={{
+            background: 'var(--color-poor-light)',
+            border: '1px solid var(--color-poor-border)',
+            borderRadius: 'var(--radius-xl)',
+            padding: 'var(--space-4)',
+            fontSize: 'var(--fs-sm)',
+            fontWeight: 'var(--fw-semibold)',
+            color: 'var(--color-poor-text)',
+            lineHeight: 'var(--lh-relaxed)',
+          }}
+        >
+          ❌{' '}
+          <strong style={{ fontWeight: 'var(--fw-extrabold)' }}>Audit Error:</strong> {errorMsg}
+          <div
+            style={{
+              fontSize: 'var(--fs-xs)',
+              marginTop: 'var(--space-2)',
+              opacity: 0.8,
+            }}
+          >
+            The measurement engine could not start or complete. Please check the target URL structure,
+            secure port availability, or local connection configs.
           </div>
         </div>
       ) : (
-        <div className="space-y-6">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
           {/* Active Log Banner */}
-          <div className="bg-slate-50/80 border border-slate-200/50 p-4 rounded-2xl flex items-center justify-between shadow-sm">
-            <div className="flex items-center gap-3">
-              <span className="relative flex h-3 w-3">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
+          <div className="activity-banner">
+            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
+              {/* Animated status ring */}
+              <span style={{ position: 'relative', display: 'flex', width: '0.75rem', height: '0.75rem', flexShrink: 0 }}>
+                <span
+                  className="animate-ping"
+                  style={{
+                    position: 'absolute',
+                    inset: 0,
+                    borderRadius: '50%',
+                    background: 'var(--color-good)',
+                    opacity: 0.75,
+                  }}
+                />
+                <span
+                  style={{
+                    position: 'relative',
+                    width: '0.75rem',
+                    height: '0.75rem',
+                    borderRadius: '50%',
+                    background: 'var(--color-good)',
+                  }}
+                />
               </span>
-              <div className="text-xs font-bold text-slate-700">
-                Current Activity: <span className="text-slate-500 font-semibold italic">"{latestUpdate.message || 'Queued in background'}"</span>
+              <div
+                style={{ fontSize: 'var(--fs-xs)', fontWeight: 'var(--fw-bold)', color: 'var(--accent-vivid)' }}
+              >
+                Current Activity:{' '}
+                <span style={{ color: 'var(--accent-light)', fontWeight: 'var(--fw-semibold)', fontStyle: 'italic' }}>
+                  "{latestUpdate.message || 'Queued in background'}"
+                </span>
               </div>
             </div>
+
             {latestUpdate.current !== undefined && (
-              <span className="text-[10px] bg-pink-100 text-pink-700 font-bold px-2.5 py-1 rounded-full border border-pink-200">
+              <span
+                className="badge badge--poor"
+                style={{ flexShrink: 0 }}
+              >
                 Action {latestUpdate.current} / {latestUpdate.total}
               </span>
             )}
           </div>
 
           {/* Stepper Timeline */}
-          <div className="relative pl-6 space-y-6 border-l border-slate-200/60 ml-3">
-            {steps.map((step, idx) => {
+          <div className="stepper">
+            {STEPS.map((step, idx) => {
               const status = getStepStatus(step.key, idx);
-              
               return (
-                <div key={step.key} className="relative group">
-                  {/* Stepper Indicator Dot */}
-                  <span className={`absolute -left-[31px] top-0.5 flex items-center justify-center rounded-full h-4 w-4 border transition-all ${
-                    status === 'completed'
-                      ? 'bg-emerald-500 border-emerald-400 text-white shadow-[0_0_8px_0_rgba(16,185,129,0.3)]'
-                      : status === 'active'
-                      ? 'bg-white border-pink-500 shadow-[0_0_12px_0_rgba(244,63,94,0.4)] animate-pulse scale-110'
-                      : status === 'failed'
-                      ? 'bg-pink-600 border-pink-500 text-white'
-                      : 'bg-white border-slate-300'
-                  }`}>
+                <div key={step.key} className="stepper-item">
+                  {/* Indicator Dot */}
+                  <span
+                    className={`stepper-dot stepper-dot--${
+                      status === 'completed' ? 'completed'
+                      : status === 'active'    ? 'active'
+                      : status === 'failed'    ? 'failed'
+                      : ''
+                    }`}
+                  >
                     {status === 'completed' && (
-                      <svg className="h-2 w-2" fill="none" stroke="currentColor" strokeWidth="4" viewBox="0 0 24 24">
+                      <svg style={{ width: '0.5rem', height: '0.5rem' }} fill="none" stroke="white" strokeWidth="4" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                       </svg>
                     )}
                   </span>
 
-                  {/* Stepper text content */}
-                  <div>
-                    <h4 className={`text-xs font-bold transition-colors ${
-                      status === 'completed'
-                        ? 'text-emerald-700'
+                  {/* Step Text */}
+                  <h4
+                    style={{
+                      margin: 0,
+                      fontSize: 'var(--fs-xs)',
+                      fontWeight: 'var(--fw-bold)',
+                      color: status === 'completed'
+                        ? 'var(--color-good-text)'
                         : status === 'active'
-                        ? 'text-pink-600'
-                        : 'text-slate-400'
-                    }`}>
-                      {step.title}
-                    </h4>
-                    <p className={`text-[11px] font-medium transition-colors ${
-                      status === 'active' ? 'text-slate-600' : 'text-slate-400'
-                    }`}>
-                      {step.desc}
-                    </p>
+                        ? 'var(--color-active)'
+                        : 'var(--accent-light)',
+                      opacity: status === 'pending' ? 0.55 : 1,
+                      transition: 'color var(--duration-base)',
+                    }}
+                  >
+                    {step.title}
+                  </h4>
+                  <p
+                    style={{
+                      margin: '2px 0 0',
+                      fontSize: 'var(--fs-2xs)',
+                      fontWeight: 'var(--fw-medium)',
+                      color: status === 'active' ? 'var(--accent-color)' : 'var(--accent-light)',
+                      opacity: status === 'pending' ? 0.5 : 0.85,
+                      transition: 'color var(--duration-base)',
+                    }}
+                  >
+                    {step.desc}
+                  </p>
 
-                    {/* Selector Badge for Active Replays */}
-                    {status === 'active' && latestUpdate.activeSelector && (
-                      <div className="mt-2.5 inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-pink-50 border border-pink-100 text-[10px] font-bold text-pink-700 shadow-sm animate-fade-in">
-                        <span className="text-xs">🎯</span> Target element: <code className="bg-white px-1.5 py-0.5 rounded border border-pink-200 text-pink-600 font-mono text-[9px]">{latestUpdate.activeSelector}</code>
-                      </div>
-                    )}
-                  </div>
+                  {/* Active Selector Badge */}
+                  {status === 'active' && latestUpdate.activeSelector && (
+                    <div
+                      className="animate-fade-in"
+                      style={{
+                        marginTop: 'var(--space-2)',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: 'var(--space-1)',
+                        padding: 'var(--space-1) var(--space-3)',
+                        borderRadius: 'var(--radius-lg)',
+                        background: 'var(--color-active-light)',
+                        border: '1px solid var(--color-active-border)',
+                        fontSize: 'var(--fs-2xs)',
+                        fontWeight: 'var(--fw-bold)',
+                        color: 'var(--color-active)',
+                      }}
+                    >
+                      <span style={{ fontSize: 'var(--fs-xs)' }}>🎯</span>
+                      Target element:{' '}
+                      <code
+                        style={{
+                          fontFamily: 'var(--font-mono)',
+                          fontSize: 'var(--fs-2xs)',
+                          background: '#fff',
+                          padding: '1px 6px',
+                          borderRadius: 'var(--radius-sm)',
+                          border: '1px solid var(--color-active-border)',
+                          color: 'var(--color-active)',
+                        }}
+                      >
+                        {latestUpdate.activeSelector}
+                      </code>
+                    </div>
+                  )}
                 </div>
               );
             })}

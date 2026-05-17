@@ -1,0 +1,618 @@
+/*
+ * =============================================
+ *  components.css — Shared Component Patterns
+ *  INP Debugger — Agentic Design Blueprint
+ * =============================================
+ *
+ * All styles bind exclusively to tokens defined
+ * in variables.css. No hardcoded values permitted.
+ */
+
+/* ============================================
+   1. Glass Card — Primary Surface Container
+   ============================================ */
+.glass-card {
+  background: var(--surface-base);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-3xl);
+  padding: var(--space-6);
+  box-shadow: var(--shadow-card);
+  backdrop-filter: var(--blur-card);
+  -webkit-backdrop-filter: var(--blur-card);
+  position: relative;
+  overflow: hidden;
+}
+
+/* ============================================
+   2. Inner Panel — Raised Inner Surface
+   ============================================ */
+.inner-panel {
+  background: var(--surface-raised);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-xl);
+  padding: var(--space-5);
+  box-shadow: var(--shadow-sm);
+}
+
+/* ============================================
+   3. Code Block Surface — Dark Inset
+   ============================================ */
+.code-surface {
+  font-family: var(--font-mono);
+  background: #0f172a;
+  color: #f8b4c8;
+  border: 1px solid #1e293b;
+  border-radius: var(--radius-lg);
+  padding: var(--space-3) var(--space-4);
+  overflow-x: auto;
+  box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.3);
+  font-size: var(--fs-xs);
+  line-height: var(--lh-relaxed);
+}
+
+/* ============================================
+   4. Section Heading Pattern
+   ============================================ */
+.section-heading {
+  font-size: var(--fs-xl);
+  font-weight: var(--fw-bold);
+  color: var(--accent-vivid);
+  letter-spacing: var(--ls-tight);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-4);
+}
+
+.section-heading-icon {
+  width: 1.25rem;
+  height: 1.25rem;
+  flex-shrink: 0;
+}
+
+/* ============================================
+   5. Status Badges — INP Score Pills
+   ============================================ */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-full);
+  font-size: var(--fs-2xs);
+  font-weight: var(--fw-extrabold);
+  letter-spacing: var(--ls-widest);
+  text-transform: uppercase;
+  border: 1px solid transparent;
+}
+
+.badge--good {
+  background: var(--color-good-light);
+  color: var(--color-good-text);
+  border-color: var(--color-good-border);
+}
+
+.badge--warning {
+  background: var(--color-warning-light);
+  color: var(--color-warning-text);
+  border-color: var(--color-warning-border);
+}
+
+.badge--poor {
+  background: var(--color-poor-light);
+  color: var(--color-poor-text);
+  border-color: var(--color-poor-border);
+}
+
+.badge--neutral {
+  background: var(--pill-bg);
+  color: var(--accent-light);
+  border-color: var(--line-color);
+}
+
+/* ============================================
+   6. Status Indicator Dots
+   ============================================ */
+.status-dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: var(--radius-full);
+  flex-shrink: 0;
+}
+
+.status-dot--good    { background: var(--color-good);    box-shadow: var(--glow-good); }
+.status-dot--warning { background: var(--color-warning); box-shadow: var(--glow-warning); }
+.status-dot--poor    { background: var(--color-poor);    box-shadow: var(--glow-poor); }
+.status-dot--active  { background: var(--color-active);  box-shadow: var(--glow-active); }
+
+/* ============================================
+   7. Primary Action Button
+   ============================================ */
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-6);
+  border-radius: var(--radius-2xl);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-bold);
+  color: #fff;
+  background: linear-gradient(135deg, #10b981, #0d9488);
+  border: none;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
+  cursor: pointer;
+  transition:
+    transform var(--duration-fast) var(--ease-spring),
+    box-shadow var(--duration-base) var(--ease-snappy),
+    background var(--duration-base) var(--ease-snappy);
+  user-select: none;
+}
+
+.btn-primary:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 24px rgba(16, 185, 129, 0.40);
+  background: linear-gradient(135deg, #34d399, #14b8a6);
+}
+
+.btn-primary:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.20);
+}
+
+.btn-primary:disabled {
+  background: var(--pill-bg);
+  color: var(--accent-light);
+  box-shadow: none;
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
+/* ============================================
+   8. Secondary / Ghost Action Button
+   ============================================ */
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-lg);
+  font-size: var(--fs-2xs);
+  font-weight: var(--fw-bold);
+  color: var(--accent-light);
+  background: var(--surface-raised);
+  border: 1px solid var(--border-subtle);
+  cursor: pointer;
+  transition:
+    color var(--duration-fast) var(--ease-snappy),
+    background var(--duration-fast) var(--ease-snappy),
+    border-color var(--duration-fast) var(--ease-snappy),
+    box-shadow var(--duration-base) var(--ease-snappy);
+}
+
+.btn-secondary:hover {
+  background: var(--accent-vivid);
+  color: #fff;
+  border-color: var(--accent-vivid);
+  box-shadow: var(--shadow-raised);
+}
+
+/* ============================================
+   9. Dismiss / Danger Button
+   ============================================ */
+.btn-dismiss {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-md);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-bold);
+  color: var(--accent-light);
+  background: var(--pill-bg);
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition:
+    color var(--duration-fast) var(--ease-snappy),
+    background var(--duration-fast) var(--ease-snappy);
+}
+
+.btn-dismiss:hover {
+  background: var(--color-poor-light);
+  color: var(--color-poor-text);
+}
+
+/* ============================================
+   10. Form Input
+   ============================================ */
+.form-input {
+  width: 100%;
+  background: var(--input-bg);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-xl);
+  padding: var(--space-3) var(--space-4);
+  font-family: var(--font-sans);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-medium);
+  color: var(--accent-vivid);
+  outline: none;
+  box-sizing: border-box;
+  transition:
+    border-color var(--duration-fast) var(--ease-snappy),
+    box-shadow var(--duration-base) var(--ease-snappy);
+}
+
+.form-input::placeholder {
+  color: var(--accent-light);
+  opacity: 0.7;
+}
+
+.form-input:focus {
+  border-color: var(--accent-light);
+  box-shadow: 0 0 0 4px rgba(71, 85, 105, 0.08);
+}
+
+.form-input:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* ============================================
+   11. Form Label
+   ============================================ */
+.form-label {
+  display: block;
+  font-size: var(--fs-2xs);
+  font-weight: var(--fw-bold);
+  color: var(--accent-light);
+  text-transform: uppercase;
+  letter-spacing: var(--ls-wider);
+  margin-bottom: var(--space-2);
+}
+
+/* ============================================
+   12. Segmented Toggle (Device Profile)
+   ============================================ */
+.segment-group {
+  display: grid;
+  gap: var(--space-2);
+  background: var(--pill-bg);
+  padding: var(--space-1);
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--line-color);
+}
+
+.segment-btn {
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-lg);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-bold);
+  color: var(--accent-light);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition:
+    background var(--duration-fast) var(--ease-snappy),
+    color var(--duration-fast) var(--ease-snappy),
+    box-shadow var(--duration-base) var(--ease-spring);
+}
+
+.segment-btn.active {
+  background: #fff;
+  color: var(--color-good-text);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--color-good-border);
+}
+
+.segment-btn.active.mobile {
+  color: var(--color-poor-text);
+  border-color: var(--color-poor-border);
+}
+
+/* ============================================
+   13. Info Note Box
+   ============================================ */
+.info-note {
+  background: var(--surface-inset);
+  border: 1px solid var(--line-color);
+  border-radius: var(--radius-xl);
+  padding: var(--space-3);
+  font-size: var(--fs-xs);
+  color: var(--accent-light);
+  line-height: var(--lh-relaxed);
+}
+
+/* ============================================
+   14. Stepper Timeline (LiveProgress)
+   ============================================ */
+.stepper {
+  position: relative;
+  padding-left: var(--space-6);
+  border-left: 1px solid var(--line-color);
+  margin-left: var(--space-3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.stepper-item {
+  position: relative;
+}
+
+.stepper-dot {
+  position: absolute;
+  left: calc(-1 * var(--space-6) - 7px);
+  top: 2px;
+  width: 1rem;
+  height: 1rem;
+  border-radius: var(--radius-full);
+  border: 2px solid var(--line-color);
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--duration-slow) var(--ease-spring);
+}
+
+.stepper-dot--completed {
+  background: var(--color-good);
+  border-color: var(--color-good-border);
+  box-shadow: var(--glow-good);
+}
+
+.stepper-dot--active {
+  background: #fff;
+  border-color: var(--color-active);
+  box-shadow: var(--glow-active);
+  animation: pulse-ring 1.4s var(--ease-snappy) infinite;
+  transform: scale(1.1);
+}
+
+.stepper-dot--failed {
+  background: var(--color-poor);
+  border-color: var(--color-poor-border);
+  box-shadow: var(--glow-poor);
+}
+
+@keyframes pulse-ring {
+  0%, 100% { box-shadow: var(--glow-active); }
+  50%       { box-shadow: 0 0 22px 0 rgba(236, 72, 153, 0.65); }
+}
+
+/* ============================================
+   15. Live Activity Banner
+   ============================================ */
+.activity-banner {
+  background: var(--surface-inset);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-xl);
+  padding: var(--space-4);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  box-shadow: var(--shadow-sm);
+}
+
+/* ============================================
+   16. Progress Stacked Bar Chart
+   ============================================ */
+.progress-bar-track {
+  width: 100%;
+  height: 1.75rem;
+  border-radius: var(--radius-2xl);
+  overflow: hidden;
+  display: flex;
+  border: 1px solid var(--border-subtle);
+  background: var(--pill-bg);
+  box-shadow: inset 0 1px 4px rgba(0, 0, 0, 0.06);
+}
+
+.progress-bar-segment {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--fs-2xs);
+  font-weight: var(--fw-bold);
+  cursor: pointer;
+  transition: filter var(--duration-fast);
+}
+
+.progress-bar-segment:hover { filter: brightness(1.08); }
+
+.progress-bar-segment--input   { background: #fbbf24; color: #451a03; }
+.progress-bar-segment--process { background: var(--color-active);  color: #fff; }
+.progress-bar-segment--present { background: var(--color-good);    color: #052e16; }
+
+/* ============================================
+   17. Data Table
+   ============================================ */
+.data-table {
+  width: 100%;
+  text-align: left;
+  border-collapse: collapse;
+}
+
+.data-table thead tr {
+  background: var(--pill-bg);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.data-table th {
+  padding: var(--space-3);
+  font-size: var(--fs-2xs);
+  font-weight: var(--fw-bold);
+  color: var(--accent-light);
+  text-transform: uppercase;
+  letter-spacing: var(--ls-wider);
+}
+
+.data-table tbody tr {
+  border-bottom: 1px solid var(--line-color);
+  transition: background var(--duration-fast);
+}
+
+.data-table tbody tr:last-child {
+  border-bottom: none;
+}
+
+.data-table tbody tr:hover {
+  background: var(--hover-bg);
+}
+
+.data-table td {
+  padding: var(--space-3);
+  font-size: var(--fs-xs);
+  color: var(--accent-color);
+}
+
+/* ============================================
+   18. Heuristics Diagnostic Panel
+   ============================================ */
+.heuristic-card {
+  background: rgba(255, 255, 255, 0.85);
+  border: 1px solid rgba(168, 85, 247, 0.12);
+  border-radius: var(--radius-xl);
+  padding: var(--space-5);
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.heuristic-fix {
+  background: rgba(245, 243, 255, 0.8);
+  border-left: 3px solid #8b5cf6;
+  padding: var(--space-2) var(--space-3);
+  border-radius: 0 var(--radius-md) var(--radius-md) 0;
+  font-size: var(--fs-xs);
+  color: #3b0764;
+  line-height: var(--lh-relaxed);
+}
+
+/* ============================================
+   19. Interaction Heatmap Cards
+   ============================================ */
+.heatmap-card {
+  border-radius: var(--radius-xl);
+  padding: var(--space-4);
+  border: 1px solid transparent;
+  box-shadow: var(--shadow-sm);
+  transition: transform var(--duration-fast) var(--ease-spring);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.heatmap-card:hover {
+  transform: scale(1.015);
+}
+
+.heatmap-card--good    { background: rgba(209, 250, 229, 0.4); border-color: var(--color-good-border); }
+.heatmap-card--warning { background: rgba(254, 243, 199, 0.4); border-color: var(--color-warning-border); }
+.heatmap-card--poor    { background: rgba(254, 226, 226, 0.4); border-color: var(--color-poor-border); }
+
+/* ============================================
+   20. Toast Notification System
+   ============================================ */
+.toast-container {
+  position: fixed;
+  top: 1.5rem;
+  right: 1.5rem;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  pointer-events: none;
+}
+
+.toast {
+  background: rgba(255, 255, 255, 0.75);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-toast);
+  backdrop-filter: blur(24px) saturate(200%);
+  -webkit-backdrop-filter: blur(24px) saturate(200%);
+  padding: var(--space-3) var(--space-4);
+  pointer-events: all;
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  min-width: 260px;
+  max-width: 360px;
+  animation: toastIn 0.5s var(--ease-toast-in) forwards;
+}
+
+.toast--exiting {
+  animation: toastOut 0.4s var(--ease-snappy) forwards;
+}
+
+.toast-icon { flex-shrink: 0; }
+.toast-icon--success { color: var(--color-good); }
+.toast-icon--error   { color: var(--color-poor); }
+.toast-icon--info    { color: #3b82f6; }
+
+@keyframes toastIn {
+  from { opacity: 0; transform: translateX(30px) scale(0.92); }
+  to   { opacity: 1; transform: translateX(0)     scale(1); }
+}
+
+@keyframes toastOut {
+  from { opacity: 1; transform: translateX(0)     scale(1); }
+  to   { opacity: 0; transform: translateX(30px)  scale(0.92); }
+}
+
+@media (max-width: 600px) {
+  .toast-container {
+    top: auto;
+    bottom: 100px;
+    left: 1.5rem;
+    right: 1.5rem;
+  }
+}
+
+/* ============================================
+   21. Print Isolation Layer
+   ============================================ */
+@media print {
+  .hide-print,
+  .toast-container {
+    display: none !important;
+  }
+}
+
+/* ============================================
+   22. Utility: Liquid Flow Conic Border Wrapper
+   ============================================ */
+.liquid-border-wrapper {
+  position: relative;
+  border-radius: var(--radius-3xl);
+  padding: 1px; /* allows conic gradient ring to show through */
+  background: var(--liquid-gradient);
+  animation: liquidFlow 4s linear infinite;
+}
+
+.liquid-border-wrapper > * {
+  position: relative;
+  z-index: 1;
+}
+
+@keyframes liquidFlow {
+  from { --angle: 0deg; }
+  to   { --angle: 360deg; }
+}
+
+/* ============================================
+   23. Responsive Scrollbar
+   ============================================ */
+.scrollbar-thin {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(148, 163, 184, 0.3) transparent;
+}
+
+.scrollbar-thin::-webkit-scrollbar { width: 5px; height: 5px; }
+.scrollbar-thin::-webkit-scrollbar-track { background: transparent; border-radius: 8px; }
+.scrollbar-thin::-webkit-scrollbar-thumb { background: rgba(148, 163, 184, 0.3); border-radius: 8px; }
+.scrollbar-thin::-webkit-scrollbar-thumb:hover { background: rgba(148, 163, 184, 0.55); }

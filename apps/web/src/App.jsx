@@ -1,4 +1,5 @@
 import { BackgroundBlobs } from './components/BackgroundBlobs';
+
 import { AuditForm } from './components/AuditForm';
 import { LiveProgress } from './components/LiveProgress';
 import { AuditHistory } from './components/AuditHistory';
@@ -12,104 +13,245 @@ export function App() {
   useAnimatedFavicon();
 
   const jobStatus = useAuditStore(s => s.jobStatus);
-
   const isRunning = jobStatus === 'running' || jobStatus === 'pending';
 
   return (
-    <div className="min-h-screen relative font-sans text-slate-800 antialiased">
+    <div
+      data-theme="slate"
+      style={{ minHeight: '100vh', position: 'relative', fontFamily: 'var(--font-sans)', color: 'var(--accent-vivid)' }}
+    >
       {/* Dynamic Ambient Background Blobs */}
       <BackgroundBlobs />
 
+
       {/* Main Container Layout */}
-      <div className="relative z-10 max-w-7xl mx-auto px-4 py-6 md:py-10 space-y-8 animate-fade-in">
-        {/* Global Glassmorphic Header */}
-        <header className="backdrop-blur-md bg-white/45 border border-white/60 rounded-3xl p-5 md:p-6 shadow-[0_8px_32px_0_rgba(142,155,178,0.12)] flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            {/* Premium intensely glowing hollow neon lightning bolt icon */}
-            <div className="h-10 w-10 rounded-xl bg-slate-950 flex items-center justify-center border border-lime-400/40 relative overflow-hidden group shadow-[0_0_20px_rgba(163,230,53,0.35),inset_0_0_10px_rgba(163,230,53,0.15)] transition-all duration-300 hover:border-lime-400/60 hover:shadow-[0_0_28px_rgba(163,230,53,0.5),inset_0_0_12px_rgba(163,230,53,0.25)]">
-              <div className="absolute inset-0 bg-gradient-to-tr from-lime-400/25 to-transparent opacity-60 group-hover:opacity-95 transition-opacity duration-300"></div>
-              <svg 
-                xmlns="http://www.w3.org/2000/svg" 
-                viewBox="0 0 24 24" 
-                fill="none" 
-                stroke="#bef264" 
-                strokeWidth="2.8" 
-                strokeLinecap="round" 
-                strokeLinejoin="round" 
-                className="w-5 h-5 drop-shadow-[0_0_8px_rgba(163,230,53,1)] relative z-10 animate-pulse"
+      <div
+        className="animate-fade-in"
+        style={{
+          position: 'relative',
+          zIndex: 10,
+          maxWidth: '90rem',
+          margin: '0 auto',
+          padding: 'var(--space-6) var(--space-4)',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 'var(--space-8)',
+        }}
+      >
+        {/* ─────────────────────────────────────────────────────
+            Global Glassmorphic Header
+        ───────────────────────────────────────────────────── */}
+        <header className="glass-card" style={{ padding: 'var(--space-5) var(--space-6)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 'var(--space-4)' }}>
+
+            {/* Brand Mark */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
+              {/* Neon Lightning Bolt Icon */}
+              <div
+                id="header-brand-icon"
+                style={{
+                  width: '2.5rem',
+                  height: '2.5rem',
+                  borderRadius: 'var(--radius-lg)',
+                  background: '#0f172a',
+                  border: '1px solid rgba(163, 230, 53, 0.40)',
+                  boxShadow: 'var(--glow-neon)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  position: 'relative',
+                  overflow: 'hidden',
+                  transition: 'box-shadow var(--duration-slow) var(--ease-spring)',
+                  cursor: 'default',
+                  flexShrink: 0,
+                }}
               >
-                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
-              </svg>
-            </div>
-            <div>
-              <h1 className="text-lg md:text-xl font-extrabold tracking-tight text-slate-800 flex items-center gap-1.5">
-                INP Debugger <span className="text-[10px] bg-slate-200/60 text-slate-500 font-bold px-2 py-0.5 rounded border border-slate-300/30 uppercase tracking-widest">v1.0.0</span>
-              </h1>
-              <p className="text-[10.5px] font-semibold text-slate-400 uppercase tracking-wider mt-0.5">
-                Automated Interaction to Next Paint Diagnostic Workspace
-              </p>
-            </div>
-          </div>
+                <div
+                  style={{
+                    position: 'absolute',
+                    inset: 0,
+                    background: 'linear-gradient(135deg, rgba(163, 230, 53, 0.25), transparent)',
+                    opacity: 0.6,
+                  }}
+                />
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="#bef264"
+                  strokeWidth="2.8"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  style={{ width: '1.2rem', height: '1.2rem', filter: 'drop-shadow(0 0 8px rgba(163,230,53,1))', position: 'relative', zIndex: 1 }}
+                  className="animate-neon-pulse"
+                >
+                  <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+                </svg>
+              </div>
 
-          {/* Actions & Engine Status Badge */}
-          <div className="flex items-center gap-4">
-            {/* GitHub Repository Link Button */}
-            <a 
-              href="https://github.com/MasterKN48/inpDebugger" 
-              target="_blank" 
-              rel="noopener noreferrer" 
-              className="flex items-center gap-2 px-3 py-1.5 rounded-xl border border-slate-200/80 bg-white/60 hover:bg-slate-900 hover:text-white hover:border-slate-900 transition-all duration-300 shadow-sm text-slate-600 hover:shadow-md group"
-            >
-              <svg 
-                role="img" 
-                viewBox="0 0 24 24" 
-                xmlns="http://www.w3.org/2000/svg" 
-                className="w-3.5 h-3.5 fill-current transition-transform duration-300 group-hover:scale-110"
+              <div>
+                <h1
+                  style={{
+                    margin: 0,
+                    fontSize: 'var(--fs-xl)',
+                    fontWeight: 'var(--fw-extrabold)',
+                    letterSpacing: 'var(--ls-tight)',
+                    color: 'var(--accent-vivid)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 'var(--space-2)',
+                  }}
+                >
+                  INP Debugger
+                  <span
+                    style={{
+                      fontSize: 'var(--fs-2xs)',
+                      background: 'var(--pill-bg)',
+                      color: 'var(--accent-light)',
+                      fontWeight: 'var(--fw-bold)',
+                      padding: '2px 8px',
+                      borderRadius: 'var(--radius-full)',
+                      border: '1px solid var(--line-color)',
+                      textTransform: 'uppercase',
+                      letterSpacing: 'var(--ls-widest)',
+                    }}
+                  >
+                    v1.0.0
+                  </span>
+                </h1>
+                <p
+                  style={{
+                    margin: '2px 0 0',
+                    fontSize: 'var(--fs-2xs)',
+                    fontWeight: 'var(--fw-semibold)',
+                    color: 'var(--accent-light)',
+                    textTransform: 'uppercase',
+                    letterSpacing: 'var(--ls-wider)',
+                    opacity: 0.75,
+                  }}
+                >
+                  Automated INP Diagnostic Workspace
+                </p>
+              </div>
+            </div>
+
+            {/* Actions & Engine Status */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-4)' }}>
+              {/* GitHub Link */}
+              <a
+                id="header-github-link"
+                href="https://github.com/MasterKN48/inpDebugger"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn-secondary"
+                style={{ textDecoration: 'none' }}
               >
-                <path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/>
-              </svg>
-              <span className="text-[11px] font-bold tracking-wide">GitHub</span>
-            </a>
+                <svg
+                  role="img"
+                  viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
+                  style={{ width: '0.9rem', height: '0.9rem', fill: 'currentColor', flexShrink: 0 }}
+                >
+                  <path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12" />
+                </svg>
+                GitHub
+              </a>
 
-            {/* Glassmorphic vertical divider line */}
-            <div className="h-4 w-[1px] bg-slate-300/60 hidden md:block"></div>
+              {/* Vertical Divider */}
+              <div
+                style={{
+                  width: '1px',
+                  height: '1rem',
+                  background: 'var(--line-color)',
+                }}
+              />
 
-            {/* Engine Status Badge */}
-            <div className="flex items-center gap-2">
-              <span className="relative flex h-2 w-2">
-                <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${isRunning ? 'bg-pink-400' : 'bg-emerald-400'}`}></span>
-                <span className={`relative inline-flex rounded-full h-2 w-2 ${isRunning ? 'bg-pink-500' : 'bg-emerald-500'}`}></span>
-              </span>
-              <span className="text-[10.5px] font-extrabold text-slate-500 uppercase tracking-wider">
-                {isRunning ? 'Auditing Engine Active' : 'Measurement Engine Standby'}
-              </span>
+              {/* Engine Status Badge */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+                <span style={{ position: 'relative', display: 'flex', width: '0.5rem', height: '0.5rem' }}>
+                  <span
+                    className="animate-ping"
+                    style={{
+                      position: 'absolute',
+                      inset: 0,
+                      borderRadius: '50%',
+                      background: isRunning ? 'var(--color-active)' : 'var(--color-good)',
+                    }}
+                  />
+                  <span
+                    style={{
+                      position: 'relative',
+                      width: '0.5rem',
+                      height: '0.5rem',
+                      borderRadius: '50%',
+                      background: isRunning ? 'var(--color-active)' : 'var(--color-good)',
+                    }}
+                  />
+                </span>
+                <span
+                  style={{
+                    fontSize: 'var(--fs-2xs)',
+                    fontWeight: 'var(--fw-extrabold)',
+                    color: 'var(--accent-light)',
+                    textTransform: 'uppercase',
+                    letterSpacing: 'var(--ls-wider)',
+                  }}
+                >
+                  {isRunning ? 'Auditing Engine Active' : 'Measurement Engine Standby'}
+                </span>
+              </div>
             </div>
           </div>
         </header>
 
-        {/* Workspace split grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-          {/* Left Column: Runs history sidebar (4 cols on large screens, ordered last on mobile) */}
-          <aside className="lg:col-span-4 h-full order-2 lg:order-1">
+        {/* ─────────────────────────────────────────────────────
+            Workspace Split Grid
+        ───────────────────────────────────────────────────── */}
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(12, 1fr)',
+            gap: 'var(--space-8)',
+            alignItems: 'start',
+          }}
+          className="workspace-grid"
+        >
+          {/* Left Column: Audit History Sidebar */}
+          <aside style={{ gridColumn: 'span 4', order: 2 }} className="history-col">
             <AuditHistory />
           </aside>
 
-          {/* Right Column: Work area & diagnostics (8 cols on large screens, ordered first on mobile) */}
-          <main className="lg:col-span-8 space-y-8 order-1 lg:order-2">
-            {/* Audit submission form */}
+          {/* Right Column: Work Area */}
+          <main
+            style={{
+              gridColumn: 'span 8',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 'var(--space-8)',
+              order: 1,
+            }}
+            className="work-col"
+          >
             <AuditForm />
-
-            {/* Live active progress stepper */}
             <LiveProgress />
-
-            {/* Hydrated run results dashboard */}
             <MetricCards />
-
-            {/* Aggregated URL selector bottlenecks */}
             <BottleneckTable />
           </main>
         </div>
       </div>
+
+
+      {/* Responsive grid adjustments */}
+      <style>{`
+        @media (max-width: 1024px) {
+          .workspace-grid { display: flex !important; flex-direction: column !important; }
+          .history-col { order: 2 !important; }
+          .work-col    { order: 1 !important; }
+        }
+        #header-brand-icon:hover {
+          box-shadow: var(--glow-neon-hover) !important;
+        }
+      `}</style>
     </div>
   );
 }

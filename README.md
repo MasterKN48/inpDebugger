@@ -1,4 +1,4 @@
-# INP Debugger
+# ⚡ INP Debugger
 
 Open-source, self-hostable **Interaction to Next Paint (INP) debugger** focused only on INP measurement, analysis, and regression tracking.
 
@@ -6,6 +6,283 @@ Developed by **[MasterKN48](https://github.com/MasterKN48)**
 Official Repository: **[github.com/MasterKN48/inpDebugger](https://github.com/MasterKN48/inpDebugger)**
 
 This project is designed as a fast, lightweight developer tool that gives a similar style of insight to Google PageSpeed Insights and DebugBear's INP debugger, but for local, staging, authenticated, CI, and self-hosted environments.
+
+---
+
+## Quick Links
+
+- [Prerequisites](#prerequisites)
+- [Installation](#installation)
+- [Running the Dev Server](#running-the-dev-server)
+- [Running the API Server](#running-the-api-server)
+- [Running Both Together](#running-both-together)
+- [Building for Production](#building-for-production)
+- [Desktop App (Tauri)](#desktop-app-tauri)
+- [Environment Variables](#environment-variables)
+
+---
+
+## Prerequisites
+
+Before cloning and running this project, ensure you have the following installed:
+
+| Dependency | Version | Notes |
+|:---|:---|:---|
+| [Bun](https://bun.sh) | `≥ 1.1.0` | Runtime, package manager, and task runner |
+| [Rust + Cargo](https://rustup.rs) | `≥ 1.60` | Required for Tauri desktop app only |
+| [Tauri CLI](https://tauri.app/start/prerequisites/) | `≥ 2.0.0-beta` | Required for Tauri desktop app only |
+| [Playwright Chromium](https://playwright.dev) | Bundled via `@playwright/test` | Auto-installed via `bun install` |
+| Node.js | Not required | Bun replaces Node entirely |
+
+> **macOS users:** Tauri additionally requires Xcode Command Line Tools. Install with `xcode-select --install`.  
+> **Linux users:** Tauri requires `webkit2gtk`, `libappindicator3`, and related system packages. See [Tauri Linux prerequisites](https://tauri.app/start/prerequisites/#linux).  
+> **Windows users:** Tauri requires the [Microsoft C++ Build Tools](https://visualstudio.microsoft.com/visual-cpp-build-tools/) and WebView2.
+
+---
+
+## Installation
+
+Clone the repository and install all workspace dependencies in one step:
+
+```bash
+git clone https://github.com/MasterKN48/inpDebugger.git
+cd inpDebugger
+
+# Install all workspace dependencies (web, server, packages)
+bun install
+
+# Install Playwright's Chromium browser binary
+bunx playwright install chromium
+```
+
+> `bun install` respects the monorepo `workspaces` config in `package.json` and installs dependencies for all `apps/*` and `packages/*` in one pass.
+
+---
+
+## Environment Variables
+
+The API server reads its configuration from a `.env` file at the **repository root**. A default `.env` is already committed with safe development defaults:
+
+```bash
+# .env (repository root)
+
+PORT=3000                              # Port the Elysia API server listens on
+NODE_ENV=development                   # development | production
+LOG_LEVEL=info                         # fatal | error | warn | info | debug | trace
+DB_NAME=inpdebugger.db                 # SQLite database filename (created automatically)
+API_KEY=inp_debugger_secret_key_2026   # Shared auth token between server ↔ web client
+```
+
+The web frontend reads its own API key from `apps/web/.env`:
+
+```bash
+# apps/web/.env
+VITE_API_URL=http://localhost:3000
+VITE_API_KEY=inp_debugger_secret_key_2026
+```
+
+> **Important:** Change `API_KEY` / `VITE_API_KEY` to a strong random value before any non-local deployment.
+
+---
+
+## Running the Dev Server
+
+### Option A — Run everything with one command (recommended)
+
+Starts the Elysia API server and the Vite frontend concurrently:
+
+```bash
+bun run dev
+```
+
+| Service | URL |
+|:---|:---|
+| Preact frontend (Vite HMR) | [http://localhost:5173](http://localhost:5173) |
+| Elysia REST API | [http://localhost:3000](http://localhost:3000) |
+| Swagger API Playground | [http://localhost:3000/swagger](http://localhost:3000/swagger) |
+
+### Option B — Run services independently
+
+```bash
+# Terminal 1: Bun API server with watch-mode hot reload
+bun run dev:server
+
+# Terminal 2: Vite frontend with HMR
+bun run dev:web
+```
+
+---
+
+## Running the API Server
+
+The server runs standalone for headless/CI usage without a UI:
+
+```bash
+# Standard start (reads .env from repo root)
+bun apps/server/index.js
+
+# With explicit port override
+PORT=8080 bun apps/server/index.js
+
+# Watch mode (auto-restarts on file changes)
+bun --watch apps/server/index.js
+```
+
+The server exposes:
+
+| Endpoint | Description |
+|:---|:---|
+| `GET /` | Health check — returns `{ status: "online" }` |
+| `GET /swagger` | Interactive OpenAPI playground |
+| `POST /api/analyze` | Start a new INP audit job |
+| `GET /api/progress/:jobId` | Server-Sent Events live progress stream |
+| `GET /api/results/:jobId` | Fetch completed audit results |
+| `GET /api/history` | List past audit runs |
+| `DELETE /api/results/:id` | Delete a stored run |
+| `GET /api/analytics/:host` | Aggregated bottleneck data for a host |
+
+All endpoints (except `GET /` and `/swagger`) require the `X-API-Key` header matching the value in `.env`:
+
+```bash
+curl -H "X-API-Key: inp_debugger_secret_key_2026" http://localhost:3000/api/history
+```
+
+---
+
+## Running Both Together
+
+The root-level `dev` script uses `&` to start both processes in parallel:
+
+```bash
+bun run dev
+# Equivalent to:
+#   bun --watch apps/server/index.js &
+#   bun run --cwd apps/web dev
+```
+
+To stop both, press `Ctrl+C` once in the terminal. On macOS/Linux, both background processes will be killed together.
+
+---
+
+## Building for Production
+
+### 1. Frontend only (Vite static bundle)
+
+```bash
+bun run build:web
+# Output: apps/web/dist/
+```
+
+### 2. Full production lint + build
+
+```bash
+bun run build
+# Runs: eslint → vite build
+# Output: apps/web/dist/
+```
+
+Serve the built frontend with any static file server. The Elysia API server runs separately as a long-lived Bun process.
+
+### Serving the production API server
+
+```bash
+NODE_ENV=production bun apps/server/index.js
+```
+
+> In production, `NODE_ENV=production` switches the Pino logger from pretty-print to structured JSON output, suitable for log aggregators (Datadog, Grafana Loki, etc.).
+
+---
+
+## Desktop App (Tauri)
+
+The `apps/desktop` workspace wraps the Preact frontend in a native desktop window using [Tauri v2](https://tauri.app). The Tauri shell **does not bundle** the Bun API server — the API server must be running separately (or launched by the OS on app startup via a sidecar in a future release).
+
+### Prerequisites (Tauri only)
+
+Install the Tauri CLI via Cargo:
+
+```bash
+cargo install tauri-cli --version "^2.0.0-beta"
+```
+
+Or via Bun (npm wrapper):
+
+```bash
+bunx @tauri-apps/cli --version
+```
+
+### Development (Tauri dev window)
+
+The Tauri `beforeDevCommand` automatically starts the Vite dev server before opening the native window:
+
+```bash
+# From the repo root:
+bun run --cwd apps/desktop cargo-tauri dev
+
+# Or equivalently from the desktop app directory:
+cd apps/desktop
+cargo tauri dev
+```
+
+Tauri will:
+1. Run `bun run --filter web dev` (starts Vite on port 5173)
+2. Open a native desktop window pointing to `http://localhost:5173`
+
+> The API server still needs to be started separately in another terminal: `bun run dev:server`
+
+### Building the Desktop App (distributable)
+
+```bash
+# From the repo root:
+cd apps/desktop
+cargo tauri build
+```
+
+Tauri will:
+1. Run `bun run --filter web build` (Vite production bundle → `apps/web/dist/`)
+2. Compile the Rust shell
+3. Package a platform-native installer:
+
+| Platform | Output |
+|:---|:---|
+| macOS | `.dmg` + `.app` in `apps/desktop/src-tauri/target/release/bundle/dmg/` |
+| Windows | `.msi` + `.exe` in `apps/desktop/src-tauri/target/release/bundle/msi/` |
+| Linux | `.deb` + `.AppImage` in `apps/desktop/src-tauri/target/release/bundle/` |
+
+> **First build:** Rust compilation will take 3–10 minutes while downloading and compiling Tauri's dependency tree. Subsequent incremental builds are much faster.
+
+### Tauri Configuration
+
+Key settings in `apps/desktop/src-tauri/tauri.conf.json`:
+
+```json
+{
+  "build": {
+    "beforeDevCommand": "bun run --filter web dev",
+    "devUrl": "http://localhost:5173",
+    "beforeBuildCommand": "bun run --filter web build",
+    "frontendDist": "../../web/dist"
+  },
+  "app": {
+    "windows": [{ "title": "INP Debugger", "width": 1200, "height": 800 }]
+  }
+}
+```
+
+---
+
+## Monorepo Scripts Reference
+
+All scripts are run from the **repository root** with `bun run <script>`:
+
+| Script | Command | Description |
+|:---|:---|:---|
+| `dev` | `dev:server & dev:web` | Start API server + Vite frontend concurrently |
+| `dev:server` | `bun --watch apps/server/index.js` | API server with hot reload |
+| `dev:web` | `bun run --cwd apps/web dev` | Vite frontend with HMR |
+| `build` | `lint && build:web` | Lint then build the Vite frontend |
+| `build:web` | `bun run --cwd apps/web build` | Vite production bundle only |
+| `lint` | `eslint .` | ESLint across all workspaces |
 
 ---
 
@@ -706,7 +983,6 @@ Build:
 
 - Docker server mode
 - desktop wrapper with Tauri
-- CLI budget mode for CI
 
 ### Phase 5 — Advanced Diagnostics
 
@@ -716,63 +992,6 @@ Build:
 - HTML export report
 - critical interaction watchlist
 - authenticated session workflows
-
----
-
-## CLI Examples
-
-### Analyze a Page
-
-```bash
-bun run cli analyze --url https://example.com --profile mobile
-```
-
-### Analyze with Script
-
-```bash
-bun run cli analyze \
-  --url https://example.com \
-  --profile desktop \
-  --script ./flows/search.json
-```
-
-### Check Budget in CI
-
-```bash
-bun run cli check-budget \
-  --url https://staging.example.com \
-  --profile mobile \
-  --max-inp 200
-```
-
-### Compare Two Runs
-
-```bash
-bun run cli compare --run-a run_101 --run-b run_145
-```
-
----
-
-## Report Output
-
-The tool should support these export formats:
-
-- JSON
-- HTML report
-- CLI summary output
-
-### HTML Report Should Include
-
-- URL
-- profile used
-- overall INP score
-- threshold badge
-- worst interaction summary
-- interaction ranking table
-- phase breakdown bars
-- long-task summaries
-- likely-cause heuristics
-- comparison with previous baseline if available
 
 ---
 
