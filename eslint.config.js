@@ -41,6 +41,11 @@ export default [
         Response: 'readonly',
         Request: 'readonly',
         Headers: 'readonly',
+        confirm: 'readonly',
+        localStorage: 'readonly',
+        caches: 'readonly',
+        self: 'readonly',
+        Worker: 'readonly',
         // Backend & Build execution context (Node/Bun)
         process: 'readonly',
         module: 'readonly',

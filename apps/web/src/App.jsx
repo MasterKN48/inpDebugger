@@ -1,4 +1,3 @@
-import { h } from 'preact';
 import { BackgroundBlobs } from './components/BackgroundBlobs';
 import { AuditForm } from './components/AuditForm';
 import { LiveProgress } from './components/LiveProgress';
@@ -12,7 +11,6 @@ export function App() {
   // Start the dynamically pulsing neon lightning bolt favicon in the browser tab
   useAnimatedFavicon();
 
-  const activeResult = useAuditStore(s => s.activeResult);
   const jobStatus = useAuditStore(s => s.jobStatus);
 
   const isRunning = jobStatus === 'running' || jobStatus === 'pending';
