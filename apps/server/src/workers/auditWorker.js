@@ -29,9 +29,6 @@ self.onmessage = async (event) => {
       jobId,
       result
     });
-    
-    // Close the worker thread naturally
-    self.close();
   } catch (err) {
     // Post error details back
     self.postMessage({
@@ -39,8 +36,5 @@ self.onmessage = async (event) => {
       jobId,
       error: err.stack || err.message || String(err)
     });
-    
-    // Terminate worker
-    self.close();
   }
 };

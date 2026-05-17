@@ -18,7 +18,6 @@ export function handleAnalyze({ body, set }) {
   
   set.status = 202; // Asynchronous job accepted for background execution
   return {
-    success: true,
     jobId,
     message: "Chromium background measurement audit successfully initiated."
   };
@@ -79,7 +78,6 @@ export function handleDeleteJob({ params: { jobId }, set }) {
   const deleted = auditService.deleteJob(jobId);
   if (deleted) {
     return {
-      success: true,
       message: `Audit entry "${jobId}" and any active browser threads aborted/deleted successfully.`
     };
   }

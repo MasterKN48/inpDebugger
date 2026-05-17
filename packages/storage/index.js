@@ -98,21 +98,30 @@ export function saveRunResult(runResult) {
   const db = dbInstance || initDb();
   const runId = runResult.id || 'run_' + Math.random().toString(36).substring(2, 9);
   
-  // Format dates / ensure correct structure
+  // Format dates / ensure correct structure with strict fallback guards
   const runData = {
-    id: runId,
-    url: runResult.url,
+    id: runId || '',
+    url: runResult.url || '',
     profile: runResult.profile || 'desktop',
-    overallINP: runResult.overallINP || 0,
+    overallINP: runResult.overallINP !== undefined && runResult.overallINP !== null ? runResult.overallINP : 0,
     score: runResult.score || 'good',
     worstInteractionId: runResult.worstInteraction?.id || null,
     createdAt: runResult.createdAt || new Date().toISOString()
   };
 
-  // Assign IDs to interactions if missing
+  // Assign IDs to interactions if missing, with full fallback values
   const interactions = (runResult.interactions || []).map(int => ({
-    ...int,
-    id: int.id || 'int_' + Math.random().toString(36).substring(2, 9)
+    id: int.id || 'int_' + Math.random().toString(36).substring(2, 9),
+    type: int.type || 'click',
+    selector: int.selector || '',
+    inputDelay: int.inputDelay !== undefined && int.inputDelay !== null ? int.inputDelay : 0,
+    processingDuration: int.processingDuration !== undefined && int.processingDuration !== null ? int.processingDuration : 0,
+    presentationDelay: int.presentationDelay !== undefined && int.presentationDelay !== null ? int.presentationDelay : 0,
+    total: int.total !== undefined && int.total !== null ? int.total : 0,
+    loadState: int.loadState || 'complete',
+    targetText: int.targetText || '',
+    targetHtmlSnippet: int.targetHtmlSnippet || '',
+    timestamp: int.timestamp !== undefined && int.timestamp !== null ? int.timestamp : 0
   }));
 
   // Identify if worstInteraction's temporary ID needs matching
@@ -125,57 +134,62 @@ export function saveRunResult(runResult) {
     }
   }
 
-  // Atomically persist all elements using a Bun:sqlite transaction
-  const executeTransaction = db.transaction((run, ints, lts) => {
+  // Compile prepared statements OUTSIDE the transaction block to prevent Bun query-cache native panics/double-free SIGTRAP
+  const insertRunStmt = db.prepare(`
+    INSERT INTO runs (id, url, profile, overall_inp, score, worst_interaction_id, created_at)
+    VALUES ($id, $url, $profile, $overall_inp, $score, $worst_interaction_id, $created_at)
+  `);
+
+  const insertIntStmt = db.prepare(`
+    INSERT INTO interactions (id, run_id, type, selector, input_delay, processing_duration, presentation_delay, total, load_state, target_text, target_html_snippet, timestamp)
+    VALUES ($id, $run_id, $type, $selector, $input_delay, $processing_duration, $presentation_delay, $total, $load_state, $target_text, $target_html_snippet, $timestamp)
+  `);
+
+  const insertLtStmt = db.prepare(`
+    INSERT INTO long_tasks (id, run_id, interaction_id, start_time, duration, name, attribution)
+    VALUES ($id, $run_id, $interaction_id, $start_time, $duration, $name, $attribution)
+  `);
+
+  // Execute manual transaction with rollback safety
+  db.run("BEGIN TRANSACTION");
+  try {
     // 1. Insert Run
-    db.prepare(`
-      INSERT INTO runs (id, url, profile, overall_inp, score, worst_interaction_id, created_at)
-      VALUES ($id, $url, $profile, $overall_inp, $score, $worst_interaction_id, $created_at)
-    `).run({
-      $id: run.id,
-      $url: run.url,
-      $profile: run.profile,
-      $overall_inp: run.overallINP,
-      $score: run.score,
-      $worst_interaction_id: run.worstInteractionId,
-      $created_at: run.createdAt
+    insertRunStmt.run({
+      $id: runData.id || '',
+      $url: runData.url || '',
+      $profile: runData.profile || 'desktop',
+      $overall_inp: runData.overallINP !== undefined && runData.overallINP !== null ? runData.overallINP : 0,
+      $score: runData.score || 'good',
+      $worst_interaction_id: runData.worstInteractionId || null,
+      $created_at: runData.createdAt || new Date().toISOString()
     });
 
     // 2. Insert Interactions
-    const insertIntStmt = db.prepare(`
-      INSERT INTO interactions (id, run_id, type, selector, input_delay, processing_duration, presentation_delay, total, load_state, target_text, target_html_snippet, timestamp)
-      VALUES ($id, $run_id, $type, $selector, $input_delay, $processing_duration, $presentation_delay, $total, $load_state, $target_text, $target_html_snippet, $timestamp)
-    `);
-
-    for (const int of ints) {
+    for (const int of interactions) {
       insertIntStmt.run({
-        $id: int.id,
-        $run_id: run.id,
-        $type: int.type,
-        $selector: int.selector,
-        $input_delay: int.inputDelay || 0,
-        $processing_duration: int.processingDuration || 0,
-        $presentation_delay: int.presentationDelay || 0,
-        $total: int.total || 0,
+        $id: int.id || '',
+        $run_id: runData.id || '',
+        $type: int.type || 'click',
+        $selector: int.selector || '',
+        $input_delay: int.inputDelay !== undefined && int.inputDelay !== null ? int.inputDelay : 0,
+        $processing_duration: int.processingDuration !== undefined && int.processingDuration !== null ? int.processingDuration : 0,
+        $presentation_delay: int.presentationDelay !== undefined && int.presentationDelay !== null ? int.presentationDelay : 0,
+        $total: int.total !== undefined && int.total !== null ? int.total : 0,
         $load_state: int.loadState || 'complete',
         $target_text: int.targetText || '',
         $target_html_snippet: int.targetHtmlSnippet || '',
-        $timestamp: int.timestamp || 0
+        $timestamp: int.timestamp !== undefined && int.timestamp !== null ? int.timestamp : 0
       });
     }
 
     // 3. Insert Long Tasks & map their correlations
-    const insertLtStmt = db.prepare(`
-      INSERT INTO long_tasks (id, run_id, interaction_id, start_time, duration, name, attribution)
-      VALUES ($id, $run_id, $interaction_id, $start_time, $duration, $name, $attribution)
-    `);
-
     const insertedLts = new Set();
+    const lts = runResult.longTasks || [];
 
     for (const lt of lts) {
       // Find if this long task falls within any interaction timeframe
       let correlatedId = null;
-      for (const int of ints) {
+      for (const int of interactions) {
         const intStart = int.timestamp;
         const intEnd = intStart + int.total;
         const ltStart = lt.startTime;
@@ -196,18 +210,22 @@ export function saveRunResult(runResult) {
         insertedLts.add(ltKey);
         insertLtStmt.run({
           $id: 'lt_' + Math.random().toString(36).substring(2, 9),
-          $run_id: run.id,
-          $interaction_id: correlatedId,
-          $start_time: lt.startTime,
-          $duration: lt.duration,
+          $run_id: runData.id || '',
+          $interaction_id: correlatedId || null,
+          $start_time: lt.startTime !== undefined && lt.startTime !== null ? lt.startTime : 0,
+          $duration: lt.duration !== undefined && lt.duration !== null ? lt.duration : 0,
           $name: lt.name || 'script',
           $attribution: typeof lt.attribution === 'string' ? lt.attribution : JSON.stringify(lt.attribution || {})
         });
       }
     }
-  });
 
-  executeTransaction(runData, interactions, runResult.longTasks || []);
+    db.run("COMMIT");
+  } catch (err) {
+    db.run("ROLLBACK");
+    throw err;
+  }
+
   return runId;
 }
 

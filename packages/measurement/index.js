@@ -4,14 +4,15 @@
  */
 
 import fs from "fs";
+import { logger } from "../logger/index.js";
 
 // Graceful import of Playwright to support offline/restricted environment startup
 let playwright = null;
 try {
   playwright = await import("playwright");
 } catch (e) {
-  console.warn(
-    "⚠️ Playwright npm package not found or failed to load. Measurement engine will operate in mock-fallback mode.",
+  logger.warn(
+    "Playwright npm package not found or failed to load. Measurement engine will operate in mock-fallback mode."
   );
 }
 
@@ -132,6 +133,9 @@ const DISCOVERY_SCRIPT = `
   const seenSelectors = new Set();
 
   elements.forEach((el) => {
+    // Skip disabled elements
+    if (el.disabled || el.hasAttribute('disabled') || el.getAttribute('aria-disabled') === 'true') return;
+
     // Skip hidden or non-visible elements
     const rect = el.getBoundingClientRect();
     if (rect.width === 0 || rect.height === 0) return;
@@ -168,13 +172,13 @@ export async function analyzePage(url, options = {}) {
   const scriptedInteractions = options.interactions || null;
   const onProgress = options.onProgress || (() => {});
 
-  console.log(`🚀 Starting INP analysis for: ${url} (Profile: ${profile})`);
+  logger.info({ url, profile }, "Starting INP analysis");
 
   // Detect if we should use Mock mode
   const useMockMode = !playwright || options.forceMock;
   if (useMockMode) {
-    console.log(
-      "💡 Running in high-fidelity mock mode (Playwright unavailable or force-mock enabled)...",
+    logger.info(
+      "Running in high-fidelity mock mode (Playwright unavailable or force-mock enabled)..."
     );
     return runMockAnalysis(url, profile, scriptedInteractions, onProgress);
   }
@@ -189,7 +193,7 @@ export async function analyzePage(url, options = {}) {
       "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome";
 
     if (fs.existsSync(macChromePath)) {
-      console.log(`🔗 Using local system Chrome at: ${macChromePath}`);
+      logger.info({ macChromePath }, "Using local system Chrome");
       launchOptions.executablePath = macChromePath;
     }
 
@@ -256,7 +260,7 @@ export async function analyzePage(url, options = {}) {
         message: "Scanning DOM for interactive targets...",
       });
       const discovered = await page.evaluate(DISCOVERY_SCRIPT);
-      console.log(`🔍 Discovered ${discovered.length} interactive elements.`);
+      logger.info({ count: discovered.length }, "Discovered interactive elements");
 
       // Select a sample of up to 10 most relevant targets to avoid infinite testing
       targetsToTest = discovered
@@ -284,13 +288,20 @@ export async function analyzePage(url, options = {}) {
       });
 
       try {
-        console.log(
-          `👉 Replaying (${i + 1}/${totalInteractions}): ${interaction.type} on ${interaction.selector}`,
+        logger.info(
+          { current: i + 1, total: totalInteractions, type: interaction.type, selector: interaction.selector },
+          "Replaying interaction"
         );
         const element = page.locator(interaction.selector).first();
 
         // Ensure element is visible and scrolled into view before interaction
         await element.scrollIntoViewIfNeeded({ timeout: 2000 });
+
+        // Skip immediately if the element is disabled to avoid 4s timeouts and speed up analysis
+        if (await element.isDisabled()) {
+          logger.info({ selector: interaction.selector }, "Element is disabled. Skipping interaction.");
+          continue;
+        }
 
         if (interaction.type === "click" || !interaction.type) {
           await element.click({ timeout: 4000 });
@@ -307,9 +318,9 @@ export async function analyzePage(url, options = {}) {
         // Wait for main thread idle or brief timeout to let handlers run and paints occur
         await page.waitForTimeout(500);
       } catch (err) {
-        console.warn(
-          `⚠️ Interaction failed on selector: ${interaction.selector}. Skipping...`,
-          err.message,
+        logger.warn(
+          { selector: interaction.selector, error: err.message },
+          "Interaction failed on selector. Skipping..."
         );
       }
     }
@@ -355,7 +366,7 @@ export async function analyzePage(url, options = {}) {
       createdAt: new Date().toISOString(),
     };
   } catch (err) {
-    console.error("❌ Error during INP measurement orchestration:", err);
+    logger.error({ err }, "Error during INP measurement orchestration");
     if (browser) await browser.close();
     throw err;
   }

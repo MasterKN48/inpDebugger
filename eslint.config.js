@@ -38,6 +38,9 @@ export default [
         URL: 'readonly',
         Image: 'readonly',
         Blob: 'readonly',
+        Response: 'readonly',
+        Request: 'readonly',
+        Headers: 'readonly',
         // Backend & Build execution context (Node/Bun)
         process: 'readonly',
         module: 'readonly',

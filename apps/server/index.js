@@ -66,6 +66,11 @@ export const app = new Elysia()
 
   // 3. API Standard JSON Response Formatting Hook
   .mapResponse(({ response, set }) => {
+    // If the response is a native Response object (e.g. raw files, downloads, HTML reports), bypass wrapping
+    if (response instanceof Response) {
+      return response;
+    }
+
     // If the response is undefined, null, or already strictly formatted, handle cleanly
     if (response === undefined || response === null) {
       return {
@@ -75,11 +80,25 @@ export const app = new Elysia()
       };
     }
 
-    if (typeof response === "object" && ("success" in response || "error" in response)) {
+    // Check if the response is already in the exact standardized success envelope
+    if (
+      typeof response === "object" &&
+      "success" in response &&
+      "data" in response
+    ) {
       return response;
     }
 
-    // Client or Server Error states
+    // Check if the response is already in the exact standardized error envelope
+    if (
+      typeof response === "object" &&
+      response.success === false &&
+      "error" in response
+    ) {
+      return response;
+    }
+
+    // Client or Server Error states (status >= 400)
     if (set.status >= 400) {
       return {
         success: false,
@@ -88,11 +107,11 @@ export const app = new Elysia()
       };
     }
 
-    // Standardized Success responses
+    // Standardized Success responses: always wrap in { success: true, data: response, message }
     return {
       success: true,
       data: response,
-      message: "Request successfully processed."
+      message: response.message || "Request successfully processed."
     };
   })
 

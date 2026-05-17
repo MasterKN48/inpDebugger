@@ -23,6 +23,10 @@
   "bundle": {
     "active": true,
     "targets": "all",
+    "resources": [
+      "../../apps/server/**/*",
+      "../../packages/**/*"
+    ],
     "icon": [
       "icons/32x32.png",
       "icons/128x128.png",

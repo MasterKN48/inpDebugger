@@ -1,9 +1,4 @@
-/**
- * ⚡ INP Debugger — Audit Service
- * Orchestrates business logic, database transactions, in-memory job status tracking,
- * and background thread worker lifecycles.
- */
-
+import { Database } from "bun:sqlite";
 import { logger } from "../../../../packages/logger/index.js";
 import {
   saveRunResult,
@@ -12,10 +7,72 @@ import {
   deleteRun
 } from "../../../../packages/storage/index.js";
 
-// In-memory active job status tracker for live progress updates
-const activeJobs = new Map();
+// Spawns isolated high-performance in-memory SQLite database for job state tracking
+const memDb = new Database(":memory:");
 
-// In-memory reference to active thread Workers (for termination/aborts)
+// Initialize relational schema for transient active job and progress states
+memDb.run(`
+  CREATE TABLE IF NOT EXISTS active_jobs (
+    id TEXT PRIMARY KEY,
+    status TEXT NOT NULL,
+    result TEXT,
+    error TEXT,
+    created_at INTEGER NOT NULL
+  )
+`);
+
+memDb.run(`
+  CREATE TABLE IF NOT EXISTS active_job_progress (
+    job_id TEXT NOT NULL,
+    phase TEXT NOT NULL,
+    message TEXT NOT NULL,
+    current INTEGER,
+    total INTEGER,
+    active_selector TEXT,
+    timestamp INTEGER NOT NULL
+  )
+`);
+
+// Pre-compile all in-memory database statements at startup to prevent native async cache panics
+const insertJobStmt = memDb.prepare(`
+  INSERT INTO active_jobs (id, status, created_at)
+  VALUES (?, 'pending', ?)
+`);
+
+const insertProgressStmt = memDb.prepare(`
+  INSERT INTO active_job_progress (job_id, phase, message, current, total, active_selector, timestamp)
+  VALUES (?, ?, ?, ?, ?, ?, ?)
+`);
+
+const updateJobStatusStmt = memDb.prepare(`
+  UPDATE active_jobs SET status = ? WHERE id = ?
+`);
+
+const updateJobCompleteStmt = memDb.prepare(`
+  UPDATE active_jobs SET status = 'completed', result = ? WHERE id = ?
+`);
+
+const updateJobFailedStmt = memDb.prepare(`
+  UPDATE active_jobs SET status = 'failed', error = ? WHERE id = ?
+`);
+
+const selectJobStmt = memDb.prepare(`
+  SELECT * FROM active_jobs WHERE id = ?
+`);
+
+const selectProgressStmt = memDb.prepare(`
+  SELECT * FROM active_job_progress WHERE job_id = ? ORDER BY timestamp ASC
+`);
+
+const deleteJobStmt = memDb.prepare(`
+  DELETE FROM active_jobs WHERE id = ?
+`);
+
+const deleteJobProgressStmt = memDb.prepare(`
+  DELETE FROM active_job_progress WHERE job_id = ?
+`);
+
+// In-memory reference to active thread Workers (live OS thread handles, non-serializable)
 const activeWorkers = new Map();
 
 /**
@@ -27,15 +84,12 @@ const activeWorkers = new Map();
  */
 export function createJob(url, profile, interactions) {
   const jobId = "job_" + Math.random().toString(36).substring(2, 11);
+  const now = Date.now();
   
-  const jobState = {
-    status: "pending",
-    progress: [],
-    result: null,
-    error: null
-  };
+  // Persist initial job record in our memory-relational tables
+  insertJobStmt.run(jobId, now);
+  insertProgressStmt.run(jobId, 'initialized', 'Job queue registered.', null, null, null, now);
 
-  activeJobs.set(jobId, jobState);
   logger.info({ jobId, url }, "Initiating background audit job");
 
   try {
@@ -51,47 +105,54 @@ export function createJob(url, profile, interactions) {
       const { type, progress, result, error } = event.data;
 
       if (type === "progress") {
-        jobState.status = "running";
-        jobState.progress.push({
-          phase: progress.phase,
-          message: progress.message,
-          current: progress.current,
-          total: progress.total,
-          activeSelector: progress.activeSelector,
-          timestamp: Date.now()
-        });
-        logger.debug({ jobId, phase: progress.phase }, progress.message);
+        updateJobStatusStmt.run('running', jobId);
+
+        const currentVal = progress.current !== undefined && progress.current !== null ? progress.current : null;
+        const totalVal = progress.total !== undefined && progress.total !== null ? progress.total : null;
+        const phaseVal = progress.phase || 'running';
+        const msgVal = progress.message || '';
+        const selVal = progress.activeSelector || null;
+
+        insertProgressStmt.run(
+          jobId,
+          phaseVal,
+          msgVal,
+          currentVal,
+          totalVal,
+          selVal,
+          Date.now()
+        );
+
+        logger.debug({ jobId, phase: phaseVal }, msgVal);
       } 
       
       else if (type === "completed") {
         logger.info({ jobId }, "Background analysis completed successfully. Persisting to database...");
         
-        // Add final ID to payload
-        result.id = jobId;
-        saveRunResult(result);
+        // Add final ID to payload safely
+        const finalResult = result || {};
+        finalResult.id = jobId;
 
-        jobState.status = "completed";
-        jobState.result = result;
-        jobState.progress.push({
-          phase: "completed",
-          message: "Analysis saved successfully.",
-          timestamp: Date.now()
-        });
+        try {
+          saveRunResult(finalResult);
+        } catch (saveErr) {
+          logger.error({ jobId, err: saveErr.message || saveErr }, "Failed to write results to persistent SQLite database");
+        }
+
+        const resultStr = finalResult ? JSON.stringify(finalResult) : null;
+        updateJobCompleteStmt.run(resultStr, jobId);
+        insertProgressStmt.run(jobId, 'completed', 'Analysis saved successfully.', null, null, null, Date.now());
 
         // Clean up thread resources
         cleanupWorker(jobId);
       } 
       
       else if (type === "error") {
-        logger.error({ jobId, error }, "Background worker thread error during execution");
+        const errorMsg = error || 'Unknown worker thread error';
+        logger.error({ jobId, error: errorMsg }, "Background worker thread error during execution");
         
-        jobState.status = "failed";
-        jobState.error = error;
-        jobState.progress.push({
-          phase: "failed",
-          message: `Execution failed: ${error}`,
-          timestamp: Date.now()
-        });
+        updateJobFailedStmt.run(errorMsg, jobId);
+        insertProgressStmt.run(jobId, 'failed', `Execution failed: ${errorMsg}`, null, null, null, Date.now());
 
         cleanupWorker(jobId);
       }
@@ -106,14 +167,12 @@ export function createJob(url, profile, interactions) {
     });
 
   } catch (err) {
-    logger.error({ jobId, err }, "Failed to spawn background worker thread");
-    jobState.status = "failed";
-    jobState.error = `Thread spawning failed: ${err.message}`;
-    jobState.progress.push({
-      phase: "failed",
-      message: jobState.error,
-      timestamp: Date.now()
-    });
+    const catchMsg = err.message || String(err);
+    logger.error({ jobId, err: catchMsg }, "Failed to spawn background worker thread");
+    
+    updateJobFailedStmt.run(`Thread spawning failed: ${catchMsg}`, jobId);
+    insertProgressStmt.run(jobId, 'failed', `Thread spawning failed: ${catchMsg}`, null, null, null, Date.now());
+
     cleanupWorker(jobId);
   }
 
@@ -126,7 +185,24 @@ export function createJob(url, profile, interactions) {
  * @returns {Object|null}
  */
 export function getJobStatus(jobId) {
-  return activeJobs.get(jobId) || null;
+  const job = selectJobStmt.get(jobId);
+  if (!job) return null;
+
+  const progressRows = selectProgressStmt.all(jobId);
+
+  return {
+    status: job.status,
+    progress: progressRows.map(row => ({
+      phase: row.phase,
+      message: row.message,
+      current: row.current,
+      total: row.total,
+      activeSelector: row.active_selector,
+      timestamp: row.timestamp
+    })),
+    result: job.result ? JSON.parse(job.result) : null,
+    error: job.error
+  };
 }
 
 /**
@@ -159,14 +235,21 @@ export function deleteJob(jobId) {
   const worker = activeWorkers.get(jobId);
   if (worker) {
     logger.info({ jobId }, "Aborting active worker thread...");
-    worker.terminate();
+    setTimeout(() => {
+      try {
+        worker.terminate();
+      } catch (err) {
+        logger.error({ jobId, err: err.message || err }, "Error during worker abort");
+      }
+    }, 0);
     activeWorkers.delete(jobId);
   }
 
-  // 2. Clear in-memory active states
-  activeJobs.delete(jobId);
+  // 2. Clear transient records from SQLite in-memory tables
+  deleteJobStmt.run(jobId);
+  deleteJobProgressStmt.run(jobId);
 
-  // 3. Atomically remove from SQLite database
+  // 3. Atomically remove from physical SQLite database
   return deleteRun(jobId);
 }
 
@@ -177,7 +260,15 @@ export function deleteJob(jobId) {
 function cleanupWorker(jobId) {
   const worker = activeWorkers.get(jobId);
   if (worker) {
-    worker.terminate(); // Double guard termination
+    // Terminate worker asynchronously after 100ms to allow all internal tasks to settle, 
+    // ensuring clean OS-level thread release and memory reclamation.
+    setTimeout(() => {
+      try {
+        worker.terminate();
+      } catch (err) {
+        logger.error({ jobId, err: err.message || err }, "Error during deferred worker termination");
+      }
+    }, 100);
     activeWorkers.delete(jobId);
   }
 }
