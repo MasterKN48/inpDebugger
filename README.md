@@ -27,25 +27,25 @@ Build a self-hosted INP debugger that:
 
 ### Backend / Runtime
 
-- **Bun**
-- **Elysia** for HTTP API
-- **bun:sqlite** for local persistence
+- **Bun** (High-performance JS runtime & package manager)
+- **Elysia** for high-performance, modular HTTP API routes
+- **Worker Threads** (`worker_threads`) for offloading heavy, CPU-bound Playwright/Chromium instances from the main web thread
+- **bun:sqlite** for local SQLite database persistence
+- **Pino Logger** for high-performance structured JSON logging in production and colorized pretty-printing in development
+- **OWASP Secure Headers** + CORS hardening and client-server API Key authentication via `.env` basic authorization
 
 ### Measurement Engine
 
-- **Playwright**
+- **Playwright** (isolated runner orchestration)
 - **Chromium only**
 - **`web-vitals` attribution build** for INP collection
 - **Chrome DevTools Protocol (CDP)** for tracing and long-task analysis
 
 ### Frontend
 
-- **Preact**
-- **Tailwind CSS**
-
-### Packaging
-
-- **Desktop:** Tauri
+- **Preact** + Preact Hooks
+- **Tailwind CSS** (modern HSL glassmorphism, responsive sidebar layout)
+- **Dynamic Canvas Favicon** for real-time pulsing neon tab icons synchronized to active application states
 
 ---
 
@@ -973,30 +973,35 @@ Example Mermaid sequence:
 sequenceDiagram
     participant U as User
     participant UI as Preact UI
-    participant API as Bun API
-    participant ME as Measurement Engine
-    participant CH as Chromium
+    participant API as Bun API (Main Thread)
+    participant W as Audit Worker (Worker Thread)
+    participant CH as Chromium (Playwright)
     participant DB as SQLite
 
-    U->>UI: Start analysis
-    UI->>API: POST /api/analyze
-    API->>ME: Create run job
-    ME->>CH: Launch page and inject measurement hooks
-    ME->>CH: Replay interactions
-    CH-->>ME: INP attribution + timing data
-    ME->>DB: Store run and interactions
-    API-->>UI: Return result/progress
+    U->>UI: Input URL and Click 'Run Audit'
+    UI->>API: POST /api/analyze (X-API-Key auth)
+    Note over API: Authenticate & Validate Request
+    API->>W: Spawn Audit Worker Thread
+    API-->>UI: Return Standard Response (Job ID / Status)
+    Note over UI: Poll Live Progress / Listen to SSE
+    W->>CH: Launch Chromium & Inject web-vitals attribution build
+    W->>CH: Auto-discover & script-replay interactions
+    CH-->>W: Capture INP timing values & attributions
+    W->>DB: Store results, target attributes, and long tasks
+    W-->>API: Signal job completion via db flag / IPC
+    UI->>API: GET /api/results/:jobId
+    API-->>UI: Deliver hydrated diagnostics
 ```
 
 Example Mermaid architecture:
 
 ```mermaid
 flowchart TD
-    UI[Preact UI] --> API[Bun + Elysia API]
-    API --> ME[Measurement Engine]
-    ME --> CH[Playwright + Chromium]
-    API --> DB[SQLite]
-    API --> REP[Reporting Module]
+    UI[Preact UI] -- X-API-Key Header --> API[Bun + Elysia API Main Thread]
+    API -- Read/Poll Status --> DB[(SQLite Database)]
+    API -- Spawn Worker --> W[Audit Worker Thread]
+    W -- Perform Measurement --> CH[Playwright + Chromium]
+    W -- Hydrate & Persist Run --> DB
 ```
 
 These documents are required project artifacts, not optional notes.
